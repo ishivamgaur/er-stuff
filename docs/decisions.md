@@ -687,3 +687,58 @@ are the product.
 - Content is data driven. Adding a tool must not require a frontend change.
 - Only show a verification date when a human verified it.
 - The admin panel controls the content. The public site only reads.
+
+---
+
+## D23. Accounts and user submitted listings
+
+**Decision.** Anyone with an account can submit their own product. Submissions
+land in a review queue and never appear publicly, and are never marked
+verified, until a person approves them. Auth is Better Auth with a MongoDB
+adapter, per D1. The admin role is granted only by
+`npm run db:promote`, never through the sign up form.
+
+**Why.** The earlier plan argued that browsing should need no account, and that
+was right for reading. It was wrong for writing. A vendor is the most accurate
+source of information about their own product, and a queue lets us collect that
+without weakening the promise the site is built on. The alternative, letting
+anyone publish immediately, would have made "verified by a person" meaningless.
+
+**Consequences.**
+
+- `role` is `input: false` on the auth user, so the client cannot assign itself
+  admin. There is no self service admin signup.
+- An account may have at most five pending submissions, capped per account
+  rather than per IP, so a shared office IP does not punish everyone behind it.
+- A submission is a vendor claim, not data. It never inherits `verified`.
+- Accounts exist now, which reverses the earlier no-login stance for reading.
+  Reading still needs no account and that has not changed.
+
+## D24. Credential calls go through the client SDK, not server actions
+
+**Decision.** Sign in, sign up and sign out call the Better Auth client SDK
+from a client component. We do not call `auth.api.*` inside a server action.
+
+**Why.** `auth.api.signInEmail` returns its `Set-Cookie` on a response object
+that a server action discards. The result is a redirect to an authenticated URL
+with no session cookie, so the user silently lands back on a signed out page
+with nothing to explain why. This failed in exactly that way and cost real time.
+Sign out had the mirror problem, where the cookie was never cleared and the
+session survived the refresh.
+
+## D25. Markdown as the visual language, not the content source
+
+**Decision.** The interface reads like technical documentation. Headings carry
+their `#` and `##`, structured data renders as a fenced block or a definition
+list, lists use `-` markers, and attribute names are the real field names, for
+example `pricing.freeTier`. Content stays in MongoDB. We are not adopting MDX.
+
+**Why.** Markdown is legible because its structure is visible. A reader can tell
+a heading from a value from a note before reading a word, which suits a
+directory whose whole value is scannable, honest fields. Taking it further, to
+markdown files as the content source, would mean giving up the database and
+the review workflow for a site whose data is edited by people, not by commits.
+
+**Consequences.** `src/components/md/primitives.tsx` owns the vocabulary and
+every page uses it. No ad hoc `##` markers in individual components, or the
+language stops being consistent.

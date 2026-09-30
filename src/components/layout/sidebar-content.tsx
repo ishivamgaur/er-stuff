@@ -14,7 +14,7 @@ export const SidebarContent = ({
   sections,
   onNavigate,
 }: SidebarContentProps) => (
-  <div className="flex min-h-full flex-col">
+  <div>
     <div>
       <Link
         href="/explore"
@@ -45,18 +45,6 @@ export const SidebarContent = ({
         <p className="pb-1 text-body font-bold">Sections</p>
         <CountNav items={sections} onNavigate={onNavigate} />
       </div>
-    </div>
-
-    <div className="mt-auto flex flex-col gap-0.5 border-t border-line pt-3 text-micro text-ink-3">
-      <p>Free to browse, no account required.</p>
-      <p>Pricing verified by a person, not a guess.</p>
-      <Link
-        href="/sponsors"
-        {...(onNavigate ? { onClick: onNavigate } : {})}
-        className="mt-2 w-fit text-micro text-ink-4 underline decoration-transparent decoration-from-font underline-offset-[0.3em] transition-colors hover:text-ink-2 hover:decoration-current"
-      >
-        [Sponsors &amp; disclosure]
-      </Link>
     </div>
   </div>
 )

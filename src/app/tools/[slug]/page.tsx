@@ -4,6 +4,7 @@ import { ToolLogo } from "@/components/tools/tool-logo"
 import { PricingBadge } from "@/components/tools/pricing-badge"
 import { IndexGroup } from "@/components/tools/index-row"
 import { PageHeader } from "@/components/layout/page-header"
+import { MdFence, MdHeading, MdKeyValue } from "@/components/md/primitives"
 import { VerifiedState } from "@/components/tools/verified-state"
 import { BevelButton } from "@/components/ui/bevel-button"
 import { findCategoriesByIds, findToolBySlug, findTools, findToolsByIds } from "@/lib/db/tools"
@@ -105,7 +106,7 @@ const TagGroup = ({ title, items }: { title: string; items: string[] }) => {
 
   return (
     <div>
-      <p className="micro-label">{title}</p>
+      <p className="text-micro text-ink-4">{title}</p>
       <ul className="mt-1.5 flex flex-wrap gap-x-1.5 gap-y-1">
         {items.map((item) => (
           <li key={item} className="text-small text-ink-2">
@@ -197,44 +198,35 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
         </div>
       </PageHeader>
 
-      <section className="border-b border-line py-6">
-        <p className="micro-label">Details</p>
-        <dl className="mt-2 max-w-[40rem]">
-          {buildFacts(tool).map((fact) => (
-            <div
-              key={fact.label}
-              className="flex items-baseline gap-4 border-b border-dashed border-line py-1.5 last:border-b-0"
-            >
-              <dt className="w-32 shrink-0 text-small text-ink-4">{fact.label}</dt>
-              <dd className="flex-1 text-body">{fact.value}</dd>
-            </div>
-          ))}
-        </dl>
+      <section className="border-t border-line py-6">
+        <MdHeading level={2}>details</MdHeading>
+        <MdKeyValue
+          className="mt-3 max-w-[44rem]"
+          rows={buildFacts(tool).map((fact) => ({ term: fact.label, value: fact.value }))}
+        />
 
         {tool.pricing.freeTier ? (
-          <div className="mt-4 max-w-[62ch]">
-            <p className="micro-label">Free tier</p>
-            <p className="mt-1.5 text-body text-ink-2">
-              {tool.pricing.freeTier.description ?? "A free tier is available."}
-            </p>
-            <p className="mt-1 text-small text-ink-3">
-              credit card required:{" "}
-              <VerifiedState
-                value={tool.pricing.freeTier.creditCardRequired}
-                trueLabel="yes"
-                falseLabel="no"
-              />
-            </p>
-          </div>
+          <MdFence title="pricing.freeTier" className="mt-4 max-w-[44rem]">
+            {tool.pricing.freeTier.description ?? "A free tier is available."}
+            {"\n"}creditCardRequired:{" "}
+            <VerifiedState
+              value={tool.pricing.freeTier.creditCardRequired}
+              trueLabel="true"
+              falseLabel="false"
+            />
+          </MdFence>
         ) : null}
       </section>
 
-      <div className="grid gap-4 border-b border-line py-6 sm:grid-cols-2 lg:grid-cols-4">
-        <TagGroup title="Best for" items={tool.bestFor} />
-        <TagGroup title="Technologies" items={tool.technologies} />
-        <TagGroup title="Tags" items={tool.tags} />
-        <TagGroup title="Integrations" items={tool.integrations} />
-      </div>
+      <section className="border-t border-line py-6">
+        <MdHeading level={2}>attributes</MdHeading>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <TagGroup title="bestFor" items={tool.bestFor} />
+          <TagGroup title="technologies" items={tool.technologies} />
+          <TagGroup title="tags" items={tool.tags} />
+          <TagGroup title="integrations" items={tool.integrations} />
+        </div>
+      </section>
 
       {alternatives.length > 0 ? (
         <IndexGroup
@@ -254,9 +246,9 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
         />
       ) : null}
 
-      <section className="py-6">
-        <p className="micro-label">Verification</p>
-        <p className="mt-1.5 max-w-[62ch] text-body text-ink-2">
+      <section className="border-t border-line py-6">
+        <MdHeading level={2}>verification</MdHeading>
+        <p className="mt-2 max-w-[62ch] text-body text-ink-2">
           {verifiedOn ? (
             <>
               last verified by an editor on <span className="text-ink">{verifiedOn}</span>.

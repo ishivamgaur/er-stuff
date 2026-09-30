@@ -7,6 +7,8 @@ import { PRIMARY_NAVIGATION } from "@/config/navigation"
 import { SITE, SITE_URL } from "@/config/site"
 import { findCategoryToolCounts } from "@/lib/db/categories"
 import { findTotalToolCount } from "@/lib/db/tools"
+import { getCurrentUser } from "@/lib/auth/session"
+import type { Viewer } from "@/components/layout/viewer"
 import "./globals.css"
 
 const funnelDisplay = Funnel_Display({
@@ -52,7 +54,13 @@ const IDENTITY = {
 const THEME_SCRIPT = `(function(){try{var s=localStorage.getItem("theme");var t=s==="light"||s==="dark"?s:(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark");document.documentElement.dataset.theme=t;}catch(e){}})();`
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [total, counts] = await Promise.all([findTotalToolCount(), findCategoryToolCounts()])
+  const [total, counts, user] = await Promise.all([
+    findTotalToolCount(),
+    findCategoryToolCounts(),
+    getCurrentUser(),
+  ])
+
+  const viewer: Viewer | null = user ? { id: user.id, email: user.email, role: user.role } : null
   const countBySlug = counts
 
   const navigation = PRIMARY_NAVIGATION.map((item) => ({ ...item }))
@@ -72,7 +80,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <div className="mx-auto flex w-full max-w-5xl flex-col lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
-          <SidebarRail identity={IDENTITY} navigation={navigation} sections={sections} />
+          <SidebarRail
+            identity={IDENTITY}
+            navigation={navigation}
+            sections={sections}
+            viewer={viewer}
+          />
           <div className="min-w-0">
             <Toolbar
               total={total}

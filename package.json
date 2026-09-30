@@ -20,13 +20,17 @@
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
     "check:mobile": "tsx scripts/check-mobile-nav.ts",
     "audit:orphans": "tsx scripts/audit-orphans.ts",
-    "db:sponsored": "tsx --env-file=.env.local scripts/set-sponsored.ts"
+    "db:sponsored": "tsx --env-file=.env.local scripts/set-sponsored.ts",
+    "check:auth": "tsx scripts/check-auth.ts",
+    "db:promote": "tsx --env-file=.env.local scripts/promote-admin.ts"
   },
   "dependencies": {
+    "better-auth": "^1.7.6",
     "mongoose": "^8.24.4",
     "next": "16.3.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {

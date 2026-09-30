@@ -69,13 +69,18 @@ export const IndexGroup = ({
   tools,
   basePath = "/tools",
 }: IndexGroupProps) => (
-  <section className="border-b border-line py-6 last:border-b-0">
+  <section className="border-t border-line py-6 first:border-t-0 first:pt-0">
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
       {count !== undefined ? (
         <span className="text-lead leading-tight font-bold tabular-nums text-ink">{count}</span>
       ) : null}
       {title ? (
-        <h2 className="text-lead leading-tight font-bold tracking-tight text-ink">{title}</h2>
+        <h2 className="flex items-baseline gap-2 text-lead leading-tight font-bold tracking-tight text-ink">
+          <span aria-hidden className="shrink-0 select-none text-ink-4">
+            ##
+          </span>
+          <span className="min-w-0">{title}</span>
+        </h2>
       ) : null}
       {description ? (
         <p className="w-full min-w-0 text-small text-pretty text-ink-3 sm:w-auto sm:flex-1 sm:truncate">

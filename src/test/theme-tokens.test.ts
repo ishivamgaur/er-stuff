@@ -47,15 +47,19 @@ describe("theme tokens", () => {
   )
 
   /**
-   * Names that resolve through a non-colour theme namespace, such as the
-   * `--text-*` font size scale, or through a Tailwind built-in.
+   * Names that resolve through a different theme namespace, such as the
+   * `--text-*` font size scale. Derived from the stylesheet rather than listed,
+   * so adding a font size does not mean editing this test.
+   */
+  const otherNamespaceTokens = new Set(
+    [...css.matchAll(/^\s*--(?!color-)([a-z]+)-([a-z0-9-]+)\s*:/gm)].map((m) => m[2] as string),
+  )
+
+  /**
+   * Tailwind built-ins that are not theme tokens at all.
    */
   const builtInNames = new Set([
-    // font size scale from --text-*
-    "micro",
-    "small",
-    "body",
-    "lead",
+    // resets
     "none",
     // typography
     "pretty",
@@ -67,6 +71,7 @@ describe("theme tokens", () => {
     "balance",
     "decoration-color",
     "font",
+    "from-font",
     // borders
     "b",
     "t",
@@ -78,19 +83,15 @@ describe("theme tokens", () => {
     "solid",
     "y-reverse",
     // layout
-    "y",
     "gradient-to-b",
     "full",
     "screen",
-    // Tailwind colour keywords
+    // colour keywords
     "transparent",
     "white",
     "black",
     "current",
     "inherit",
-    // decoration utilities
-    "from-font",
-    "transparent",
   ])
 
   it("parses colour tokens out of globals.css", () => {
@@ -124,7 +125,9 @@ describe("theme tokens", () => {
         const name = token.slice(prefix.length)
         if (!name || name.startsWith("[")) continue
         if (/\d/.test(name)) continue
-        if (colorTokens.has(name) || builtInNames.has(name)) continue
+        if (colorTokens.has(name) || otherNamespaceTokens.has(name) || builtInNames.has(name)) {
+          continue
+        }
 
         offenders.push(`${relative(ROOT, file).replace(/\\/g, "/")}: ${token}`)
       }

@@ -69,6 +69,8 @@ local values.
 | `db:capture-previews` | visits every tool site, saves a screenshot and favicon |
 | `check:mobile` | Playwright assertions for the drawer, overflow, focus and scroll lock |
 | `audit:orphans` | reachability graph from the Next entry points, lists unreachable modules |
+| `check:auth` | Playwright assertions for signup, session, submission, guards, signout |
+| `db:promote` | grants the admin role to one account, the only way in |
 | `db:sponsored` | flag or unflag one tool as sponsored, for exercising the rail |
 
 ## 5. Traps already hit. Read before writing code.
@@ -213,13 +215,63 @@ Portal to `document.body` does not need a mounted guard. The drawer only
 renders after a click, which is always client side, so a `useEffect` mount flag
 is both unnecessary and an ESLint violation under 5.8.
 
-### 5.12 A scrim needs its own token, not a page colour at low alpha
+### 5.12 `"use server"` must be the first line of the file
+
+A server action module without the directive at the very top compiles, passes
+lint and typecheck, then fails at runtime the moment a page passes the function
+to a Client Component:
+
+```
+Functions cannot be passed directly to Client Components unless you explicitly
+expose it by marking it with "use server".
+```
+
+An inline `action={() => ...}` inside a `"use server"` file works, which is why
+this slipped through. Put the directive on line one of every `actions.ts`.
+
+### 5.13 `auth.api.*` inside a server action drops its session cookie
+
+Sign up appeared to work and left the user signed out. `auth.api.signInEmail`
+returns `Set-Cookie` on a response object that a server action discards, so the
+redirect lands on an authenticated URL with no cookie. Sign out had the mirror
+fault, the cookie was never cleared and the session survived the refresh.
+
+Call credentials through `authClient` from a client component instead. See D24.
+There is a trap test, `npm run check:auth`, that covers sign up, session,
+submission, route guards and sign out.
+
+### 5.14 A scrim needs its own token, not a page colour at low alpha
 
 `bg-page/70` is white at 70 percent in light mode, so the scrim behind the
 drawer was invisible and the underlying page read as part of the panel. Use
 `--overlay`, `rgb(11 11 11 / 0.34)` in light and `rgb(0 0 0 / 0.62)` in dark.
 
+### 5.15 Copy that contradicts behaviour
+
+The sign up form labelled the name field "Optional" while `Field` hard coded
+`required`, so the browser silently refused to submit an empty form and the
+submit event never fired. Nothing in the console. Any label claiming a field is
+optional must have `required={false}` in the same file.
+
 ## 6. Design system
+
+The interface reads like technical documentation. Markdown is legible because
+its structure is visible, and a directory of mostly unknown fields benefits
+from a reader being able to tell a heading from a value before reading a word.
+See D25.
+
+- `src/components/md/primitives.tsx` owns the vocabulary. Use it, do not write
+  an ad hoc `##` in a page.
+- Headings render their own marker: `#` on `PageHeader` and level one,
+  `##` on `IndexGroup` and level two.
+- `MdFence` is a fenced block with a literal ``` header, used for data we want
+  read as data, for example `pricing.freeTier`.
+- `MdKeyValue` is the definition list. It replaces the old `<dl>` of dashed
+  rows, which read as a table of mostly nothing.
+- Attribute labels are real field names in camelCase, not Title Case, so the
+  page matches the shape of the data.
+- Never make a field look filled in when it is unknown. The directory is 48
+  tools and most capability fields are still `null`.
 
 Two references, merged deliberately.
 
@@ -264,7 +316,7 @@ Type scale: `text-micro` 11px, `text-small` 12px, `text-body` 13px,
 - Section rules are solid `border-line`, not dashed. Dashed was inherited from
   designeeeer and reverted.
 - Every page header uses the same `PageHeader` primitive: count, then bold
-  title, then muted description.
+  title with its `#`, then muted description.
 - Every list uses `IndexGroup` and `IndexList`.
 - Every filter uses `FilterGroup` and `FilterToggle`.
 - Decorative `01` section numbering was removed, it read as a markdown heading.
@@ -323,6 +375,9 @@ Zod schemas in `src/schemas/` are the source of truth. Mongoose models in
 | `/categories/[slug]` | one category, sections as tree nav |
 | `/tools/[slug]` | detail, details list, tags, alternatives, related, verification |
 | `/search` | search results |
+| `/signup`, `/signin`, `/account` | credentials, via Better Auth |
+| `/submit` | list your own product, account holders only |
+| `/admin/reviews` | moderation queue for submissions |
 | `/sponsors` | disclosure, what money does not buy, and how to sponsor |
 | `/api/search`, `/api/search/autocomplete` | search JSON |
 
@@ -359,10 +414,16 @@ favicons. One tool, Fly.io, has no favicon and falls back to Simple Icons.
 - `SITE.domain` has no TLD, so the contact address on `/sponsors` renders as
   plain text rather than a `mailto`. It becomes a link once a real domain is
   set. Do not invent a domain to make it clickable.
-- No auth, by choice. It was argued out of V1 so that browsing needs no
-  account. If it returns, it belongs with community features, not before.
-  `lib/auth/require-admin.ts` and `src/proxy.ts` are written and compiling but
-  have no callers yet, so `audit:orphans` reports them. That is deliberate.
+- Accounts exist for writing only. Reading never needs one. See D23, this
+  reverses the earlier no-login stance and says why.
+- No email verification and no password reset. Both need an email transport,
+  which does not exist yet. Until it does, a forgotten password is
+  unrecoverable and a typo'd address cannot be confirmed. Do not launch with
+  accounts and no verification without saying so.
+- No rate limiting on the auth routes. D19 recorded the store, the model was
+  removed as dead code, so it must be rebuilt with the routes.
+- `models/event.ts` and `schemas/event.ts` are written and compiling but unused.
+  They exist for the outbound click attribution in the monetisation plan.
 - Admin CMS is not built. Content currently changes through seed scripts. The
   password gate, session signing and `src/proxy.ts` guard are written and
   compiling.
