@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { PageHeader } from "@/components/layout/page-header"
 import { SITE } from "@/config/site"
+import { SPONSORSHIP_TIERS } from "@/lib/billing/pricing"
 
 export const metadata: Metadata = {
   title: "Sponsors and disclosure",
@@ -39,7 +40,7 @@ const WAYS_TO_SUPPORT = [
   },
   {
     title: "Sponsored placement",
-    body: "A single labelled slot at the top of the Explore page, shown above the organic list and separated from it. It carries a Sponsored label permanently, it does not move the tool in the organic list, and it does not affect its verification state.",
+    body: "A single labelled slot at the top of the Explore page, shown above the organic list and separated from it. It carries a Sponsored label for the whole term, it does not move the tool in the organic list, and it does not affect its verification state.",
   },
   {
     title: "Claim your listing",
@@ -126,10 +127,27 @@ export default function SponsorsPage() {
         <section>
           <h2 className="text-lead font-bold text-ink">Sponsorship</h2>
           <p className="mt-2 text-body leading-relaxed text-pretty text-ink-2">
-            There is currently one placement available, the sponsored slot on the Explore page. It
-            is sold as a fixed term, not as a ranking, and it is labelled for the whole term. There
-            is no unlabelled option and there is no tier that buys better placement in a list.
+            One placement exists, the sponsored slot on the Explore page. It is sold as a fixed term
+            rather than a ranking, and it is labelled for the whole term. There is no unlabelled
+            option, no automatic renewal, and no tier that buys better placement in a list.
           </p>
+
+          <div className="mt-4 grid gap-px border border-line bg-line sm:grid-cols-2">
+            {SPONSORSHIP_TIERS.map((tier) => (
+              <div key={tier.id} className="bg-field px-4 py-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-body font-bold text-ink">{tier.label}</span>
+                  <span className="text-lead font-bold tabular-nums text-accent">
+                    ${tier.price}
+                  </span>
+                </div>
+                <p className="mt-1 text-small text-ink-3">
+                  {tier.weeks} week{tier.weeks > 1 ? "s" : ""}, one labelled slot, impressions and
+                  clicks reported.
+                </p>
+              </div>
+            ))}
+          </div>
           <p className="mt-3 text-body leading-relaxed text-pretty text-ink-2">
             To enquire, write to <ContactAddress address={`sponsors@${SITE.domain}`} />. If a
             placement is ever shown without a Sponsored label, email the same address and it will be

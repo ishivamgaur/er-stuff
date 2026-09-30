@@ -6,8 +6,9 @@ This file is the accumulated context for the project. Read it before making
 changes. It records decisions, why they were made, and the traps already hit,
 so the same mistakes are not repeated.
 
-`PLAN.md` at the repo root is the current plan and the file to edit. Read it
-first. `AGENTS.md` is how the code works, `PLAN.md` is where we are going.
+`erstuff-full-plan.md` at the repo root is the plan and the file to edit. Read
+it first. `AGENTS.md` is how the code works, the full plan is where we are
+going. There is deliberately only one plan, because two of them drift.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
@@ -412,6 +413,13 @@ favicons. One tool, Fly.io, has no favicon and falls back to Simple Icons.
   removed. If they come back they need pages first, and `PRIMARY_NAVIGATION` in
   `src/config/navigation.ts` carries a comment saying so.
 - The sponsorship product exists and is labelled, but nobody has bought one.
+  Pricing is set by the plan at $5 per week or $18 for four weeks, and lives in
+  `src/lib/billing/pricing.ts` so the page and the tests read one number.
+  `lib/billing/sponsorship.ts` and `models/sponsorship.ts` are reachable only
+  from tests, so `audit:orphans` reports them until the checkout exists.
+- `CampaignModel` and `PaymentModel` exist and the activation path requires a
+  server-recorded payment. No payment provider is integrated and no checkout
+  exists. `src/test/plan-integrity.test.ts` guards the activation rule.
   `supabase` is flagged `sponsored: true` locally to exercise the rail. Turn it
   off with `npm run db:sponsored -- supabase off` before any public deploy.
 - `SITE.domain` has no TLD, so the contact address on `/sponsors` renders as

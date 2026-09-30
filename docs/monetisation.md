@@ -61,6 +61,25 @@ says the product page link is `nofollow`, while the FAQ says every listing
 gets a dofollow backlink. Either way, it is worth copying the lesson that a
 backlink has value, and being precise about which kind we give.
 
+## Our pricing
+
+Set by `erstuff-full-plan.md` section 27:
+
+| Offer | Price |
+|---|---|
+| Explore sponsored slot, one week | $5 |
+| Explore sponsored slot, four weeks | $18 |
+
+A campaign is a finite campaign, not a subscription. There is no automatic
+renewal and no permanent placement, because a permanent slot is a ranking
+position in disguise. Pricing lives in `src/lib/billing/pricing.ts` so the
+page, the campaign creator and the tests all read the same number.
+
+The competitor charges $15 and $20 a week. We start lower on purpose: $5 is
+an impulse purchase taken on a card without a procurement conversation, which
+is the right price while there is no traffic to charge much for. Raise it when
+there is demand, not before.
+
 ## What erstuff sells
 
 Compatible with `/sponsors` and with D10.
@@ -75,9 +94,9 @@ charge, because it costs us nothing to give and it makes a sponsorship the
 obvious upgrade rather than the only option.
 
 **Sponsored placement, per week.** One labelled slot above the organic list
-on `/explore`. Fixed weekly term, permanently labelled, never affects ranking
-or verification. Priced low enough to buy on a card, sold once someone
-actually wants it.
+on `/explore`. $5 for a week or $18 for four. Permanently labelled for the
+term, never affects ranking or verification, never renews itself. Checkout is
+not built, because there is no confirmed buyer.
 
 **Affiliate links.** On outbound clicks only. Never changes a price, never
 changes a position. Needs the `tool.outbound` event, which is already in the

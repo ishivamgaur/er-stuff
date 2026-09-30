@@ -756,3 +756,37 @@ taken.
 **Why.** Password only costs a vendor the highest friction step in the
 submission flow. Conditional configuration means a fresh clone and CI need no
 Google Cloud project, and the app never shows a button that leads to an error.
+
+## D27. One plan, at the root
+
+**Decision.** `erstuff-full-plan.md` is the only plan document. It replaces
+the interim `PLAN.md` and supersedes `docs/execution-plan.md` and
+`developer-hub-full-plan.md` as sources of truth for what we are building.
+
+**Why.** A second, shorter plan was written to summarise the first. It
+immediately began to disagree with reality, which is the same drift that has
+already happened once between the category config and the database, see
+`AGENTS.md` 5.4. One plan, edited by one person, in one place.
+
+**What still exists and why.** `docs/decisions.md` for reasoning, `AGENTS.md`
+for how the code works, `docs/monetisation.md` for pricing research. The old
+`docs/execution-plan.md` and `developer-hub-full-plan.md` are kept as the
+historical record of the original pitch and are no longer authoritative.
+
+## D28. Sponsorship pricing, from the plan
+
+**Decision.** Launch at $5 for one week, with an optional $18 for four weeks.
+A sponsorship is a finite campaign, never an automatic subscription, and never
+a permanent placement.
+
+**Why.** $5 is an impulse purchase taken on a card without a procurement
+conversation, which is the point while there is no traffic to charge much for.
+A fixed term has a natural end, so there is no awkward conversation about when
+a placement stops, and a permanent slot is a ranking position in disguise.
+A campaign that must be renewed is a subscription in everything but name, so
+calling it a campaign is the honest description.
+
+**Not built yet.** The `Payment` and `SponsorshipCampaign` models exist and the
+Dodo integration is designed for behind a payment service. Neither the provider
+nor the checkout is integrated, because there is no confirmed buyer. See
+`erstuff-full-plan.md` section 30 and D29.
