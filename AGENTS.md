@@ -6,6 +6,9 @@ This file is the accumulated context for the project. Read it before making
 changes. It records decisions, why they were made, and the traps already hit,
 so the same mistakes are not repeated.
 
+`PLAN.md` at the repo root is the current plan and the file to edit. Read it
+first. `AGENTS.md` is how the code works, `PLAN.md` is where we are going.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
@@ -416,6 +419,14 @@ favicons. One tool, Fly.io, has no favicon and falls back to Simple Icons.
   set. Do not invent a domain to make it clickable.
 - Accounts exist for writing only. Reading never needs one. See D23, this
   reverses the earlier no-login stance and says why.
+- Google sign in is wired and dormant. It needs a Google Cloud OAuth client
+  with `http://localhost:3000/api/auth/callback/google` as a redirect URI, and
+  `GOOGLE_CLIENT_ID` plus `GOOGLE_CLIENT_SECRET` in `.env.local`. The button
+  is hidden until both exist, so CI and a fresh clone work without them.
+- Password accounts exist and cannot be linked to a Google account by the user.
+  `accountLinking` is enabled with `trustedProviders: ["google"]`, so the link
+  happens automatically on matching verified email and otherwise nothing
+  happens.
 - No email verification and no password reset. Both need an email transport,
   which does not exist yet. Until it does, a forgotten password is
   unrecoverable and a typo'd address cannot be confirmed. Do not launch with

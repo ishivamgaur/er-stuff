@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { AuthPanel } from "@/components/auth/credentials-form"
+import { isGoogleEnabled } from "@/lib/auth/auth"
 
 export const metadata: Metadata = {
   title: "Create an account",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function SignUpPage() {
-  return <AuthPanel mode="signup" />
+  return <AuthPanel mode="signup" googleEnabled={isGoogleEnabled} />
 }

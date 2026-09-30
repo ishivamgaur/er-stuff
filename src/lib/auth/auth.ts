@@ -15,11 +15,42 @@ if (!db) {
   throw new Error("MongoDB Db handle unavailable, cannot initialise auth")
 }
 
+const googleClientId = process.env.GOOGLE_CLIENT_ID
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
+
+/**
+ * Google sign in is wired but stays dormant until credentials exist, so a
+ * fresh clone and CI both work without a Google Cloud project. The button is
+ * hidden at the same time, see `isGoogleEnabled`.
+ */
+export const isGoogleEnabled = Boolean(googleClientId && googleClientSecret)
+
 export const auth = betterAuth({
   database: mongodbAdapter(db),
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 12,
+  },
+  socialProviders: isGoogleEnabled
+    ? {
+        google: {
+          clientId: googleClientId as string,
+          clientSecret: googleClientSecret as string,
+          prompt: "select_account",
+        },
+      }
+    : {},
+  account: {
+    /**
+     * Someone who signed up with a password and then signs in with the same
+     * Google address should land on their existing account, not get a second
+     * one, and not be told their address is taken.
+     */
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      allowDifferentEmails: false,
+    },
   },
   user: {
     additionalFields: {

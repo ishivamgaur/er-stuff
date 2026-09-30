@@ -1,116 +1,106 @@
 # Monetisation
 
-How erstuff makes money, and what the money is not allowed to do.
+How erstuff makes money, what money must not buy, and what the competitor
+actually charges.
 
-Reference model: findalternative.net, whose disclosure page is the most
-honest public statement of this business I have found. Their model is two
-revenue lines and a published list of what money cannot buy.
+## What findalternate.com charges
 
-## The model
+Checked against its live `/pricing` page. It runs a Next.js app, reports
+roughly 5k monthly visitors, and cites its own DR of 27 as a selling point.
+It takes payment through Dodo Payments.
 
-### 1. Affiliate commissions
+| Offer | Price | What you get |
+|---|---|---|
+| Free Launch | $0 forever | Weekly homepage leaderboard, 25 free slots per week, public product page, launch analytics |
+| Premium Launch | $9 per product | Verified badge, priority feed, two dofollow backlinks, gold badge, newsletter and X shoutout, highlighted card ring, a written SEO blog post, "Alternative To" placement on competitor pages |
+| Sidebar placement | $15 per week | Pinned in the global sidebar across every product and category page |
+| Dashboard placement | $20 per week | Featured in the main homepage feed |
 
-Some outbound tool links are affiliate links. If a reader clicks through and
-subscribes, the vendor may pay a commission.
+Placements run on a weekly cycle, you pick a week and a slot, and multiple
+products can be sponsored at once. Sales are taken over X DM.
 
-For erstuff this is the most natural line, because the data model already
-supports it. `Tool.websiteUrl` is the destination, and the `tool.outbound`
-event already records `destination: "website" | "github" | "docs"`. Affiliate
-tracking is a parameter on the URL plus attribution on that event. No new
-architecture is required.
+The model in one line: the directory is free, so the directory itself is not
+the product. **Attention is the product**, sold back to the vendors whose
+products are listed in it, on a recurring weekly cycle.
 
-Realistic expectation: affiliate revenue needs traffic first, and paying
-little. Treat it as a bonus, not a plan.
+## The three lessons worth taking
 
-### 2. Sponsored placements, always labelled
+**1. Recurring weekly beats one-off.** A $9 one-off launch is a rounding
+error. $15 to $20 a week is a subscription small enough to buy without a
+procurement conversation, and it compounds. We should sell time-boxed weeks,
+not a permanent tier. A week also has a natural end, which removes the
+awkward question of when a placement stops.
 
-A vendor can pay to be featured. The `Tool.sponsored` flag already exists.
+**2. Vendor analytics is a real product, and it is free of the trust problem.**
+A dashboard showing views and outbound clicks on your own listing is exactly
+what a vendor wants, and it costs us nothing we promised not to do. It is
+also the cheapest possible retention: a vendor watching traffic does not
+cancel. This is the line we can build with a clear conscience.
 
-The rule that matters is not that we label it, it is that the label is
-structural. Decision D10 already enforces the hard part: the organic sort
-query does not reference `featured` or `sponsored`, and a unit test asserts it.
-Paid results come from a separate query into a separate visual rail, so
-sponsorship cannot leak into ranking even by accident.
+**3. Comparison pages are the SEO engine, not a feature.** "Alternative to X"
+pages rank for the highest-intent queries there are, and they are genuinely
+useful to a reader. This is how a directory earns its traffic, and unlike
+sponsorship it pays back to the reader rather than to the vendor.
 
-### 3. Claimed listings, free
+## The two things we will not copy
 
-A vendor claims their own listing by proving domain control, then corrects
-their own details. This is free, and it is worth doing anyway:
+**Selling a verified badge.** findalternate sells a verified badge for $9. We
+publish, on `/sponsors`, that verification is never for sale. Adopting their
+pricing would make that page a lie, and the badge is the only asset we have
+that a link farm does not. Verification is earned by a person, or it is not
+there.
 
-- Corrections come from the people with the most accurate information.
-- The claim link is worth something to the vendor, so it is worth doing.
-- Claimed listings create a durable relationship with the vendor, which is
-  how the first sponsorship tends to arrive.
+**Selling rank priority.** Their Premium Launch includes "top priority
+placement above free listings". That is selling ranking, which is the exact
+thing we say we do not do. We sell a labelled slot in a separate rail. A
+tool may appear in both the rail and the organic list, but it earns the
+organic position on its own merits.
 
-Note their honesty about this: a claimed listing is verified as *theirs*, not
-verified as *accurate*. We should say the same thing.
+We should also note their own copy contradicts itself: the Free Launch tier
+says the product page link is `nofollow`, while the FAQ says every listing
+gets a dofollow backlink. Either way, it is worth copying the lesson that a
+backlink has value, and being precise about which kind we give.
 
-## Dodo Payments
+## What erstuff sells
 
-Dodo Payments is a merchant of service, in the same family as Lemon Squeezy
-and Paddle. The practical reasons it fits:
+Compatible with `/sponsors` and with D10.
 
-- It is built for indie developers and sellers, not enterprise procurement.
-- It acts as merchant of record, so sales tax and VAT are handled rather than
-  owed.
-- It removes the need for a payment system until there is money to take.
+**Free, forever.** Any account holder submits a product. It goes to a review
+queue, gets a public page once approved, and appears in the directory. The
+submission cap keeps the queue reviewable. This is not a loss leader, it is
+the content.
 
-What it does not do for us: it does not decide what we sell. Sponsored
-placement is still the product, and the labelling rules are still ours.
+**Vendor analytics, free.** Views and outbound clicks on your own listing. No
+charge, because it costs us nothing to give and it makes a sponsorship the
+obvious upgrade rather than the only option.
 
-Decision: do not integrate Dodo Payments yet. There is nothing to sell until
-there is an audience. Integrating a payment provider before the first sponsor
-is building for a problem that does not exist. Revisit when the first real
-inbound sponsorship arrives.
+**Sponsored placement, per week.** One labelled slot above the organic list
+on `/explore`. Fixed weekly term, permanently labelled, never affects ranking
+or verification. Priced low enough to buy on a card, sold once someone
+actually wants it.
 
-## What money must not buy
+**Affiliate links.** On outbound clicks only. Never changes a price, never
+changes a position. Needs the `tool.outbound` event, which is already in the
+schema.
 
-This is the part worth copying from findalternative verbatim, in substance.
-Publishing it is what makes the rest of the page credible.
-
-- **Rankings are not for sale.** No payment moves a tool up a list.
-- **Inclusion is not conditional on paying.** A tool with no affiliate
-  programme sits beside one with a generous one.
-- **Alternatives are not filtered.** We will list a competitor that pays us
-  nothing next to one that does, including when the free option is better.
-- **Verification is not for sale.** Nobody pays to become verified. That would
-  destroy the only asset this product has.
-- **A free trial is never described as free forever.** Not for money, not
-  without it.
-
-## The disclosure page
-
-findalternative publishes a dedicated disclosure page and an email address to
-report unlabelled paid placements. That is a trust mechanism, not a legal
-formality. It should be built before the first sponsor, not after.
-
-Required content:
-
-- That the site is free to use.
-- That some links are affiliate links, and that it never changes the price.
-- That paid placements are labelled, and that unlabelled means unpaid.
-- The list above, stating what money does not buy.
-- How listings are produced, including that seeding is AI assisted and
-  human supervised, and therefore imperfect.
-- A contact address for reporting a problem.
-
-## What is deliberately not planned
-
-Section 54 of the original plan rules these out, and nothing here changes it:
-
-- Selling the ranking position
-- Selling verification
-- Reviews, which carry a moderation cost and would invite the pay to remove
-  problem
-- A job board
-- Selling user data
+**Deliberately not sold:** ranking, verification, inclusion, reviews, user
+data, and a permanent placement. A permanent slot is a rank in disguise.
 
 ## Order of operations
 
-1. Build the disclosure page now, before any money exists. It costs an hour
-   and it is the thing that makes a later sponsorship defensible.
-2. Add the affiliate link field and outbound event attribution, which the
-   schema already supports.
-3. Open claimed listings once there is a correction flow to support them.
-4. Take the first sponsorship when someone asks, through Dodo Payments, with
-   the placement labelled and the ranking untouched.
+1. Comparison pages. Highest value, no trust cost, and they are the traffic
+   that makes everything else worth buying. This is the first thing to build.
+2. Vendor analytics on the submission we already accept. Cheap, and it makes
+   the submission flow worth something on its own.
+3. The disclosure page is already live at `/sponsors`. It must stay true as
+   each of these ships.
+4. Sponsorship, once there is traffic worth charging for. Do not build
+   checkout before then.
+
+## On payment
+
+findalternate uses Dodo Payments, which is a reasonable fit and the same
+provider we would pick: merchant of record, tax handled, built for
+independent sellers. Do not integrate it until there is a confirmed buyer.
+There is no value in a payment provider before the first sale, and integrating
+one early is a distraction from traffic.

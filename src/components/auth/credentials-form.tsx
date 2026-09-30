@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { authClient } from "@/lib/auth/client"
+import { GoogleButton } from "@/components/auth/google-button"
 import { AUTH_ERRORS } from "@/lib/auth/errors"
 import { cn } from "@/lib/utils/cn"
 
@@ -81,7 +82,13 @@ const Field = ({
   </label>
 )
 
-export const CredentialsForm = ({ mode }: { mode: Mode }) => {
+export const CredentialsForm = ({
+  mode,
+  googleEnabled,
+}: {
+  mode: Mode
+  googleEnabled: boolean
+}) => {
   const copy = COPY[mode]
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
@@ -160,6 +167,7 @@ export const CredentialsForm = ({ mode }: { mode: Mode }) => {
         >
           {isPending ? copy.pending : copy.submit}
         </button>
+        {googleEnabled ? <GoogleButton mode={mode} /> : null}
       </form>
 
       <p className="mt-5 text-small text-ink-3">
@@ -175,7 +183,7 @@ export const CredentialsForm = ({ mode }: { mode: Mode }) => {
   )
 }
 
-export const AuthPanel = ({ mode }: { mode: Mode }) => {
+export const AuthPanel = ({ mode, googleEnabled }: { mode: Mode; googleEnabled: boolean }) => {
   const copy = COPY[mode]
   return (
     <div className="mx-auto max-w-sm">
@@ -186,7 +194,7 @@ export const AuthPanel = ({ mode }: { mode: Mode }) => {
         {copy.title}
       </h1>
       <p className="mt-2 text-body leading-relaxed text-ink-2">{copy.intro}</p>
-      <CredentialsForm mode={mode} />
+      <CredentialsForm mode={mode} googleEnabled={googleEnabled} />
     </div>
   )
 }

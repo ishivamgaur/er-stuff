@@ -742,3 +742,17 @@ the review workflow for a site whose data is edited by people, not by commits.
 **Consequences.** `src/components/md/primitives.tsx` owns the vocabulary and
 every page uses it. No ad hoc `##` markers in individual components, or the
 language stops being consistent.
+
+## D26. Google sign in, dormant until configured
+
+**Decision.** Better Auth is configured with Google as a social provider, but
+only when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are both present. The
+Continue with Google button is rendered from the server, so it never appears
+when sign in cannot complete. Account linking is enabled with
+`trustedProviders: ["google"]`, so a matching verified email links to the
+existing account instead of creating a second one or reporting the address
+taken.
+
+**Why.** Password only costs a vendor the highest friction step in the
+submission flow. Conditional configuration means a fresh clone and CI need no
+Google Cloud project, and the app never shows a button that leads to an error.
