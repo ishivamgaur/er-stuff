@@ -1,0 +1,65 @@
+{
+  "name": "atlas-tools",
+  "collectSearchMetrics": false,
+  "countDocuments": false,
+  "indexes": [
+    {
+      "name": "default_search",
+      "type": "search",
+      "dynamic": true,
+      "fields": [
+        {
+          "type": "string",
+          "name": "name",
+          "analyzer": "lucene.keyword",
+          "searchAnalyzer": "lucene.keyword",
+          "sortable": true,
+          "indexOptions": "docs",
+          "weight": 10
+        },
+        {
+          "type": "string",
+          "name": "slug",
+          "analyzer": "lucene.keyword",
+          "indexOptions": "docs",
+          "weight": 10
+        },
+        {
+          "type": "string",
+          "name": "description",
+          "analyzer": "lucene.standard",
+          "indexOptions": "docs",
+          "weight": 3
+        },
+        {
+          "type": "string",
+          "name": "tags",
+          "analyzer": "lucene.standard",
+          "indexOptions": "docs",
+          "weight": 5
+        },
+        {
+          "type": "string",
+          "name": "technologies",
+          "analyzer": "lucene.standard",
+          "indexOptions": "docs",
+          "weight": 5
+        },
+        {
+          "type": "string",
+          "name": "bestFor",
+          "analyzer": "lucene.standard",
+          "indexOptions": "docs",
+          "weight": 4
+        },
+        {
+          "type": "string",
+          "name": "integrations",
+          "analyzer": "lucene.standard",
+          "indexOptions": "docs",
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}
