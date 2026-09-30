@@ -124,3 +124,17 @@ export const findTotalToolCount = async (): Promise<number> => {
   await connectToDatabase()
   return ToolModel.countDocuments({ status: "published" })
 }
+
+/**
+ * D10. Sponsored tools are fetched by their own query so that the organic sort
+ * never reads `sponsored` or `featured`. If a sponsored tool also appears in
+ * the organic list it is because it earned its place, not because it paid.
+ */
+export const findSponsoredTools = async (limit = 3): Promise<PlainTool[]> => {
+  await connectToDatabase()
+  const tools = await ToolModel.find({ status: "published", sponsored: true })
+    .sort({ updatedAt: -1 })
+    .limit(limit)
+    .lean<ToolDocument[]>()
+  return toPlainTools(tools)
+}

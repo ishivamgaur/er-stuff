@@ -3,6 +3,7 @@ import { Funnel_Display, Funnel_Sans, Geist_Mono, Geist_Pixel } from "next/font/
 import { SidebarRail } from "@/components/layout/sidebar-rail"
 import { Toolbar } from "@/components/layout/toolbar"
 import { CATEGORIES } from "@/config/categories"
+import { PRIMARY_NAVIGATION } from "@/config/navigation"
 import { SITE, SITE_URL } from "@/config/site"
 import { findCategoryToolCounts } from "@/lib/db/categories"
 import { findTotalToolCount } from "@/lib/db/tools"
@@ -54,13 +55,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [total, counts] = await Promise.all([findTotalToolCount(), findCategoryToolCounts()])
   const countBySlug = counts
 
-  const navigation = [
-    { label: "Explore", href: "/explore" },
-    { label: "Free", href: "/free" },
-    { label: "Stacks", href: "/stacks" },
-    { label: "Compare", href: "/compare" },
-    { label: "Utilities", href: "/utilities" },
-  ]
+  const navigation = PRIMARY_NAVIGATION.map((item) => ({ ...item }))
 
   const sections = CATEGORIES.map((category) => ({
     label: category.name,

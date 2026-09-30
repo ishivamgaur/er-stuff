@@ -18,7 +18,9 @@
     "db:seed:tools": "tsx --env-file=.env.local scripts/seed-tools.ts",
     "db:capture-previews": "tsx --env-file=.env.local scripts/capture-previews.ts",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
-    "check:mobile": "tsx scripts/check-mobile-nav.ts"
+    "check:mobile": "tsx scripts/check-mobile-nav.ts",
+    "audit:orphans": "tsx scripts/audit-orphans.ts",
+    "db:sponsored": "tsx --env-file=.env.local scripts/set-sponsored.ts"
   },
   "dependencies": {
     "mongoose": "^8.24.4",

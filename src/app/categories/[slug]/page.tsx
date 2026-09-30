@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { IndexGroup } from "@/components/tools/index-row"
 import { PageHeader } from "@/components/layout/page-header"
-import { Pagination } from "@/components/layout/pagination"
 import { connectToDatabase } from "@/lib/db/connect"
 import { CategoryModel, type CategoryDocument } from "@/models/category"
 import { findTools } from "@/lib/db/tools"
@@ -113,13 +112,6 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       <IndexGroup
         title={result.total === 1 ? "1 tool" : `${result.total} tools`}
         tools={result.items}
-      />
-
-      <Pagination
-        page={result.page}
-        totalPages={result.totalPages}
-        searchParams={query}
-        basePath={`/categories/${category.slug}`}
       />
     </div>
   )

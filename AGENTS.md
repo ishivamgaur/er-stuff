@@ -68,6 +68,8 @@ local values.
 | `db:seed:tools` | upserts tool seed data |
 | `db:capture-previews` | visits every tool site, saves a screenshot and favicon |
 | `check:mobile` | Playwright assertions for the drawer, overflow, focus and scroll lock |
+| `audit:orphans` | reachability graph from the Next entry points, lists unreachable modules |
+| `db:sponsored` | flag or unflag one tool as sponsored, for exercising the rail |
 
 ## 5. Traps already hit. Read before writing code.
 
@@ -315,12 +317,13 @@ Zod schemas in `src/schemas/` are the source of truth. Mongoose models in
 | Route | Purpose |
 |---|---|
 | `/` | 307 redirect to `/explore` |
-| `/explore` | the whole directory, one page, no pagination, no filters |
+| `/explore` | the whole directory, one page, no pagination, no filters. Sponsors rail sits above the organic list. |
 | `/free` | four sections: free forever, free tier, open source, self hostable |
 | `/categories` | full tree, 10 categories and 111 sections with counts |
 | `/categories/[slug]` | one category, sections as tree nav |
 | `/tools/[slug]` | detail, details list, tags, alternatives, related, verification |
 | `/search` | search results |
+| `/sponsors` | disclosure, what money does not buy, and how to sponsor |
 | `/api/search`, `/api/search/autocomplete` | search JSON |
 
 ## 9. Search
@@ -347,13 +350,19 @@ favicons. One tool, Fly.io, has no favicon and falls back to Simple Icons.
 
 ## 11. Known gaps
 
-- `/stacks`, `/compare` and `/utilities` are linked in the sidebar and in the
-  Ctrl+K palette but have no routes. They are dead links in two places. This is
-  the last place the product promises something it does not deliver.
-- No disclosure page yet. `docs/monetisation.md` specifies one, and it must
-  exist before the first sponsor. See 5.10, verification is never for sale.
+- `/stacks`, `/compare` and `/utilities` had links but no routes. The links are
+  removed. If they come back they need pages first, and `PRIMARY_NAVIGATION` in
+  `src/config/navigation.ts` carries a comment saying so.
+- The sponsorship product exists and is labelled, but nobody has bought one.
+  `supabase` is flagged `sponsored: true` locally to exercise the rail. Turn it
+  off with `npm run db:sponsored -- supabase off` before any public deploy.
+- `SITE.domain` has no TLD, so the contact address on `/sponsors` renders as
+  plain text rather than a `mailto`. It becomes a link once a real domain is
+  set. Do not invent a domain to make it clickable.
 - No auth, by choice. It was argued out of V1 so that browsing needs no
   account. If it returns, it belongs with community features, not before.
+  `lib/auth/require-admin.ts` and `src/proxy.ts` are written and compiling but
+  have no callers yet, so `audit:orphans` reports them. That is deliberate.
 - Admin CMS is not built. Content currently changes through seed scripts. The
   password gate, session signing and `src/proxy.ts` guard are written and
   compiling.

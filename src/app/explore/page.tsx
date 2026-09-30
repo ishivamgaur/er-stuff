@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
 import { IndexGroup } from "@/components/tools/index-row"
 import { PageHeader } from "@/components/layout/page-header"
-import { findTools } from "@/lib/db/tools"
+import { SponsoredRail } from "@/components/tools/sponsored-rail"
+import { findSponsoredTools, findTools } from "@/lib/db/tools"
 import { toolQuerySchema } from "@/schemas/tool-query"
 
 export const metadata: Metadata = {
@@ -17,7 +18,8 @@ type PageProps = {
 export default async function ExplorePage({ searchParams }: PageProps) {
   const params = await searchParams
   const query = toolQuerySchema.parse({ ...params, limit: 96 })
-  const result = await findTools(query)
+
+  const [result, sponsored] = await Promise.all([findTools(query), findSponsoredTools()])
 
   return (
     <div>
@@ -26,6 +28,8 @@ export default async function ExplorePage({ searchParams }: PageProps) {
         title="Explore"
         description="Every tool in the directory. Narrow it down with Free, or by category."
       />
+
+      <SponsoredRail tools={sponsored} />
 
       <IndexGroup tools={result.items} />
     </div>

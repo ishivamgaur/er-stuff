@@ -3,19 +3,13 @@ export type NavigationItem = {
   href: string
 }
 
+/**
+ * Only routes that exist. Adding a link here without a matching page under
+ * src/app is how the product ends up promising something it cannot deliver,
+ * which happened once with /stacks, /compare and /utilities.
+ */
 export const PRIMARY_NAVIGATION: readonly NavigationItem[] = [
   { label: "Explore", href: "/explore" },
   { label: "Free", href: "/free" },
-  { label: "Stacks", href: "/stacks" },
-  { label: "Compare", href: "/compare" },
-  { label: "Utilities", href: "/utilities" },
+  { label: "Categories", href: "/categories" },
 ]
-
-export const UTILITY_GROUPS = [
-  { slug: "data", name: "Data" },
-  { slug: "security", name: "Security" },
-  { slug: "web", name: "Web" },
-  { slug: "developer", name: "Developer" },
-] as const
-
-export type UtilityGroupSlug = (typeof UTILITY_GROUPS)[number]["slug"]
