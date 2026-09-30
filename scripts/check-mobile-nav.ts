@@ -74,11 +74,11 @@ const focusedInDrawer = await page.evaluate(() => {
 check("focus moved into drawer", focusedInDrawer)
 
 // Navigation is actually reachable now
-check("category links in drawer", (await dialog.getByRole("link", { name: /\[/ }).count()) >= 10)
+check("category links in drawer", (await dialog.getByRole("link").count()) >= 12)
 
 // Navigating closes the drawer
 await dialog
-  .getByRole("link", { name: /\[Database\]/ })
+  .getByRole("link", { name: /Database/ })
   .first()
   .click()
 await page.waitForURL(/\/categories\//, { timeout: 10_000 })

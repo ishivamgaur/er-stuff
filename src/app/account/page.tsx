@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import { requireUser, isAdmin } from "@/lib/auth/session"
+import { DetailList } from "@/components/tools/detail-panel"
 import { countSubmissionsByStatus, findSubmissionsForAccount } from "@/lib/db/submissions"
-import { MdHeading, MdKeyValue, MdRule } from "@/components/md/primitives"
 
 export const metadata: Metadata = {
   title: "Account",
@@ -19,25 +19,25 @@ export default async function AccountPage() {
 
   return (
     <div className="max-w-[62ch]">
-      <MdHeading level={1}>account</MdHeading>
+      <h1 className="text-title font-bold tracking-tight text-ink">account</h1>
 
-      <MdKeyValue
+      <DetailList
         className="mt-5"
         rows={[
-          { term: "email", value: user.email },
+          { label: "email", value: user.email },
           {
-            term: "name",
+            label: "name",
             value: user.displayName ?? user.name ?? "not set",
           },
-          { term: "role", value: user.role ?? "not set" },
+          { label: "role", value: user.role ?? "not set" },
           {
-            term: "pending",
+            label: "pending",
             value: String(submissions.filter((s) => s.status === "pending").length),
           },
         ]}
       />
 
-      <MdRule className="my-7" />
+      <hr className="my-7" />
 
       <div className="space-y-2">
         <Link

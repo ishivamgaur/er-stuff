@@ -4,7 +4,7 @@ import { ToolLogo } from "@/components/tools/tool-logo"
 import { PricingBadge } from "@/components/tools/pricing-badge"
 import { IndexGroup } from "@/components/tools/index-row"
 import { PageHeader } from "@/components/layout/page-header"
-import { MdFence, MdHeading, MdKeyValue } from "@/components/md/primitives"
+import { DetailList, FactPanel } from "@/components/tools/detail-panel"
 import { VerifiedState } from "@/components/tools/verified-state"
 import { BevelButton } from "@/components/ui/bevel-button"
 import { findCategoriesByIds, findToolBySlug, findTools, findToolsByIds } from "@/lib/db/tools"
@@ -199,14 +199,11 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
       </PageHeader>
 
       <section className="border-t border-line py-6">
-        <MdHeading level={2}>details</MdHeading>
-        <MdKeyValue
-          className="mt-3 max-w-[44rem]"
-          rows={buildFacts(tool).map((fact) => ({ term: fact.label, value: fact.value }))}
-        />
+        <h2 className="text-lead font-bold tracking-tight text-ink">Details</h2>
+        <DetailList className="mt-3 max-w-[44rem]" rows={buildFacts(tool)} />
 
         {tool.pricing.freeTier ? (
-          <MdFence title="pricing.freeTier" className="mt-4 max-w-[44rem]">
+          <FactPanel title="pricing.freeTier" className="mt-4">
             {tool.pricing.freeTier.description ?? "A free tier is available."}
             {"\n"}creditCardRequired:{" "}
             <VerifiedState
@@ -214,12 +211,12 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
               trueLabel="true"
               falseLabel="false"
             />
-          </MdFence>
+          </FactPanel>
         ) : null}
       </section>
 
       <section className="border-t border-line py-6">
-        <MdHeading level={2}>attributes</MdHeading>
+        <h2 className="text-lead font-bold tracking-tight text-ink">Attributes</h2>
         <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <TagGroup title="bestFor" items={tool.bestFor} />
           <TagGroup title="technologies" items={tool.technologies} />
@@ -247,7 +244,7 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
       ) : null}
 
       <section className="border-t border-line py-6">
-        <MdHeading level={2}>verification</MdHeading>
+        <h2 className="text-lead font-bold tracking-tight text-ink">Verification</h2>
         <p className="mt-2 max-w-[62ch] text-body text-ink-2">
           {verifiedOn ? (
             <>

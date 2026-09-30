@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { MdHeading, MdNote } from "@/components/md/primitives"
 import { SubmitForm } from "@/components/submissions/submit-form"
 import { requireUser } from "@/lib/auth/session"
 import { canSubmitMore, findSubmissionsForAccount } from "@/lib/db/submissions"
@@ -18,17 +17,17 @@ export default async function SubmitPage() {
 
   return (
     <div className="max-w-[62ch]">
-      <MdHeading level={1}>submit</MdHeading>
+      <h1 className="text-title font-bold tracking-tight text-ink">submit</h1>
 
-      <MdNote className="mt-3">
+      <p className="border-l-2 border-line-strong mt-3">
         Your listing goes into a review queue. Nothing you write appears publicly, and nothing you
         write is marked verified, until a person checks it. That is the whole point of the site, so
         please do not ask us to skip it.
-      </MdNote>
+      </p>
 
       {submissions.length > 0 ? (
         <section className="mt-6">
-          <MdHeading level={3}>Your submissions</MdHeading>
+          <h3 className="text-body font-bold text-ink">Your submissions</h3>
           <ul className="mt-3 divide-y divide-line border-y border-line">
             {submissions.map((submission) => (
               <li key={submission._id} className="flex items-baseline gap-3 py-2">
@@ -53,15 +52,15 @@ export default async function SubmitPage() {
       ) : null}
 
       <section className="mt-7">
-        <MdHeading level={2}>New submission</MdHeading>
+        <h2 className="text-lead font-bold tracking-tight text-ink">New submission</h2>
 
         {allowed ? (
           <SubmitForm />
         ) : (
-          <MdNote tone="warning" className="mt-3">
+          <p className="border-l-2 border-line-strong mt-3">
             You have five submissions waiting for review. Wait for a decision before sending more,
             so we are not reviewing the same thing twice.
-          </MdNote>
+          </p>
         )}
       </section>
     </div>

@@ -250,7 +250,17 @@ submission, route guards and sign out.
 drawer was invisible and the underlying page read as part of the panel. Use
 `--overlay`, `rgb(11 11 11 / 0.34)` in light and `rgb(0 0 0 / 0.62)` in dark.
 
-### 5.15 Copy that contradicts behaviour
+### 5.15 A `hidden` class needs its responsive twin on the same element
+
+Rewriting the rail class list by hand dropped `lg:flex` while keeping
+`hidden`, so the sidebar rendered at `display:none` on every width. The page
+still looked plausible because the column was still reserved, and the DOM
+assertions passed because the element existed. Only a screenshot showed it.
+
+When a component is hidden below a breakpoint, the same class string must carry
+the breakpoint that shows it again.
+
+### 5.16 Copy that contradicts behaviour
 
 The sign up form labelled the name field "Optional" while `Field` hard coded
 `required`, so the browser silently refused to submit an empty form and the
@@ -259,21 +269,22 @@ optional must have `required={false}` in the same file.
 
 ## 6. Design system
 
-The interface reads like technical documentation. Markdown is legible because
-its structure is visible, and a directory of mostly unknown fields benefits
-from a reader being able to tell a heading from a value before reading a word.
-See D25.
+The interface reads like technical documentation because a directory of mostly
+unknown fields benefits from a reader telling a heading from a value before
+reading a word. It is a principle, not a costume.
 
-- `src/components/md/primitives.tsx` owns the vocabulary. Use it, do not write
-  an ad hoc `##` in a page.
-- Headings render their own marker: `#` on `PageHeader` and level one,
-  `##` on `IndexGroup` and level two.
-- `MdFence` is a fenced block with a literal ``` header, used for data we want
-  read as data, for example `pricing.freeTier`.
-- `MdKeyValue` is the definition list. It replaces the old `<dl>` of dashed
-  rows, which read as a table of mostly nothing.
-- Attribute labels are real field names in camelCase, not Title Case, so the
-  page matches the shape of the data.
+- **Do not render literal markdown markers.** An earlier pass put `#`, `##` and
+  ``` fences into the UI. It was tried and reverted, it read as a document
+  rather than a product. Structure comes from spacing, one hairline and weight.
+- `src/components/icons/index.tsx` is the only icon set. One 16 unit grid, one
+  1.5 stroke, `currentColor` only, `aria-hidden` because every icon has a text
+  label beside it. Do not add an icon library and do not hand roll a second SVG
+  inline in a component.
+- `DetailList` in `components/tools/detail-panel.tsx` is the facts list. Field
+  names are real camelCase, for example `pricing.freeTier`, so the page matches
+  the shape of the data.
+- Tags and prices keep the `[bracketed]` treatment. Pills were tried and looked
+  foreign. This is not a markdown marker, it is the directory's own label style.
 - Never make a field look filled in when it is unknown. The directory is 48
   tools and most capability fields are still `null`.
 
@@ -339,8 +350,15 @@ Type scale: `text-micro` 11px, `text-small` 12px, `text-body` 13px,
 
 ### Responsive
 
-- Frame is `max-w-5xl` with `lg:grid-cols-[17rem_minmax(0,1fr)]`.
+- Frame is a single `max-w-6xl`. Do not cap `main` a second time, a nested max
+  width leaves the content floating in the middle of its own column.
+- The rail is 15rem, collapses to 3.5rem on a toggle, and remembers that in
+  localStorage. Below `lg` it is a drawer instead. Do not derive collapse from a
+  media query, that resets the preference on every reload.
 - Only `sm:` and `lg:` are used. The design has no other breakpoints.
+- Smooth scrolling is Lenis, mounted once in the root layout. `syncTouch` stays
+  off because hijacking touch scroll breaks momentum, and it is skipped entirely
+  for `prefers-reduced-motion`.
 - Mobile navigation is a left drawer opened from a hamburger in the toolbar,
   rendered through a portal to `document.body`. The desktop rail is hidden below
   `lg`. There is no collapsible accordion, it was tried and it displaced content.

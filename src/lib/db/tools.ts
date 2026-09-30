@@ -138,3 +138,15 @@ export const findSponsoredTools = async (limit = 3): Promise<PlainTool[]> => {
     .lean<ToolDocument[]>()
   return toPlainTools(tools)
 }
+
+/**
+ * Slugs only, for the sitemap. Selecting one field rather than whole documents
+ * keeps sitemap generation cheap and avoids converting 48 tools per build.
+ */
+export const findPublishedToolSlugs = async (): Promise<string[]> => {
+  await connectToDatabase()
+  const tools = await ToolModel.find({ status: "published" })
+    .select({ slug: 1 })
+    .lean<Array<{ slug: string }>>()
+  return tools.map((tool) => tool.slug)
+}

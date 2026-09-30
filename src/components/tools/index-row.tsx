@@ -75,12 +75,7 @@ export const IndexGroup = ({
         <span className="text-lead leading-tight font-bold tabular-nums text-ink">{count}</span>
       ) : null}
       {title ? (
-        <h2 className="flex items-baseline gap-2 text-lead leading-tight font-bold tracking-tight text-ink">
-          <span aria-hidden className="shrink-0 select-none text-ink-4">
-            ##
-          </span>
-          <span className="min-w-0">{title}</span>
-        </h2>
+        <h2 className="text-lead leading-tight font-bold tracking-tight text-ink">{title}</h2>
       ) : null}
       {description ? (
         <p className="w-full min-w-0 text-small text-pretty text-ink-3 sm:w-auto sm:flex-1 sm:truncate">

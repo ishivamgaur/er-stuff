@@ -1,21 +1,20 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { authClient } from "@/lib/auth/client"
+import { SignOutIcon } from "@/components/icons"
+import { cn } from "@/lib/utils/cn"
 
-/**
- * Sign out goes through the client SDK. Calling auth.api.signOut in a server
- * action drops the cookie clearing header, so the redirect happens and the
- * session survives the refresh.
- */
-export const SignOutButton = () => {
+export const SignOutButton = ({ collapsed = false }: { collapsed?: boolean }) => {
   const router = useRouter()
   const [isPending, setIsPending] = useState(false)
 
   return (
     <button
       type="button"
+      title={collapsed ? "Sign out" : undefined}
+      aria-label={collapsed ? "Sign out" : undefined}
       disabled={isPending}
       onClick={async () => {
         setIsPending(true)
@@ -23,9 +22,13 @@ export const SignOutButton = () => {
         router.push("/")
         router.refresh()
       }}
-      className="text-body text-ink-3 underline decoration-transparent decoration-from-font underline-offset-[0.3em] transition-colors hover:text-ink-2 hover:decoration-current disabled:opacity-50"
+      className={cn(
+        "flex min-h-9 w-full items-center gap-2.5 rounded-chip px-1.5 text-small text-ink-3 transition-colors duration-150 hover:bg-field hover:text-ink disabled:opacity-50",
+        collapsed && "justify-center px-0",
+      )}
     >
-      {isPending ? "Signing out" : "[-] Sign out"}
+      <SignOutIcon />
+      {!collapsed ? "Sign out" : null}
     </button>
   )
 }
