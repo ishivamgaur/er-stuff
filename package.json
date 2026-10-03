@@ -19,6 +19,7 @@
     "db:capture-previews": "tsx --env-file=.env.local scripts/capture-previews.ts",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
     "check:mobile": "tsx scripts/check-mobile-nav.ts",
+    "check:nav": "tsx scripts/check-nav-glide.ts",
     "audit:orphans": "tsx scripts/audit-orphans.ts",
     "db:sponsored": "tsx --env-file=.env.local scripts/set-sponsored.ts",
     "check:auth": "tsx scripts/check-auth.ts",
@@ -27,6 +28,7 @@
   "dependencies": {
     "better-auth": "^1.7.6",
     "lenis": "^1.3.26",
+    "lucide-react": "^1.49.0",
     "mongoose": "^8.24.4",
     "next": "16.3.7",
     "react": "19.2.8",

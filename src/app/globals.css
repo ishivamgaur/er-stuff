@@ -17,10 +17,21 @@
   --color-accent-ink: var(--accent-ink);
   --color-destructive: var(--destructive);
   --color-overlay: var(--overlay);
+  --color-veil: var(--veil);
 }
 
 :root {
   --overlay: rgb(0 0 0 / 0.66);
+  --veil: rgb(255 255 255 / 0.07);
+
+  /* Glass edge, lit from the top left. See the glass-outline utility. */
+  --glass-line-a: rgb(255 255 255 / 0.24);
+  --glass-line-b: rgb(255 255 255 / 0.045);
+  --glass-fill-a: rgb(255 255 255 / 0.03);
+  --glass-fill-b: rgb(255 255 255 / 0.004);
+  --glass-sheen: rgb(255 255 255 / 0.08);
+  --glass-glow: rgb(255 255 255 / 0.028);
+
   --page: #000000;
   --surface: #0a0a0a;
   --field: #141414;
@@ -42,6 +53,20 @@
 
 :root[data-theme="light"] {
   --overlay: rgb(11 11 11 / 0.36);
+  --veil: rgb(9 9 11 / 0.055);
+
+  /*
+   * Light mode inverts the glass, it does not reuse the dark values. A white
+   * edge on an off white page is invisible, so the ring is cut with the ink
+   * colour and the sheen is the only white left in it.
+   */
+  --glass-line-a: rgb(11 11 11 / 0.16);
+  --glass-line-b: rgb(11 11 11 / 0.045);
+  --glass-fill-a: rgb(11 11 11 / 0.02);
+  --glass-fill-b: rgb(11 11 11 / 0.004);
+  --glass-sheen: rgb(255 255 255 / 0.85);
+  --glass-glow: rgb(11 11 11 / 0.028);
+
   --page: #fbfbfa;
   --surface: #ffffff;
   --field: #eeeeec;
@@ -62,19 +87,37 @@
 }
 
 @theme {
+  /*
+   * Eight steps, and a deliberate gap between body and lead. A scale with no
+   * rung at 15px forces a jump from 13 to 19 for anything that needs to read
+   * as a subtitle, which is why so many screens here jumped straight to a
+   * title and lost their hierarchy.
+   */
   --text-micro: 11px;
   --text-small: 12px;
-  --text-body: 13px;
-  --text-lead: 15px;
-  --text-title: 19px;
-  --text-display: 28px;
+  --text-body: 14px;
+  --text-lead: 16px;
+  --text-title: 20px;
+  --text-display: 30px;
+  --text-hero: 40px;
 
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  /*
+   * Two shape systems, not one. Interactive chrome is a pill, because a control
+   * with a soft end reads as pressable. Content panels are soft rectangles,
+   * because a card is a container and should not look like a button.
+   */
   --radius-chip: 6px;
   --radius-control: 8px;
-  --radius-card: 12px;
+  --radius-pill: 999px;
+  --radius-card: 14px;
 
-  --font-sans: var(--font-geist-mono), ui-monospace, monospace;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -93,8 +136,8 @@
   }
 
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track,
@@ -104,11 +147,13 @@
 
   ::-webkit-scrollbar-thumb {
     background-color: var(--line-strong);
+    border: 3px solid transparent;
+    background-clip: content-box;
     border-radius: 999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--line-strong);
+    background-color: var(--ink-4);
   }
 
   body {
@@ -116,7 +161,8 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: var(--text-body);
-    line-height: 1.6;
+    font-weight: 500;
+    line-height: var(--leading-normal);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -131,10 +177,28 @@
     outline-offset: 2px;
   }
 
+  /*
+   * Headings get the display face, semibold, and tightened tracking. Body gets
+   * neither. Applying tracking-tight to running text is what makes a page feel
+   * cramped, and it belongs only on large type where it corrects the loose
+   * default sidebearing.
+   */
   h1,
   h2,
   h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.014em;
     text-wrap: balance;
+  }
+
+  /*
+   * Numbers keep a fixed width so a count that changes does not shift the row it
+   * sits in. That was the only real reason for a second font family.
+   */
+  [data-numeric],
+  .numeric {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -145,14 +209,117 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-chip);
-  background-color: color-mix(in oklab, var(--color-ink) 8%, transparent);
+  background-color: color-mix(in srgb, var(--color-ink) 7%, transparent);
   padding-inline: 5px;
   font-family: var(--font-sans);
   font-size: var(--text-small);
   line-height: 1;
   color: var(--color-ink-3);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 10%, transparent);
   user-select: none;
+}
+
+/**
+ * A hover fill that fades instead of snapping.
+ *
+ * Two things went wrong here first and both are worth recording.
+ *
+ * A background colour on a row reads as a hard block, a "barrier", because the
+ * fill has a crisp edge and lands in one frame. So the fill is a pseudo
+ * element whose opacity is transitioned, which is also interruptible part way
+ * through.
+ *
+ * The fill must not be built with color-mix against `transparent`. In oklab,
+ * mixing with transparent premultiplies and shifts the hue, which turned a
+ * neutral grey into a brown tint on hover. The veil is a plain per theme rgb
+ * value instead, and it is a radial fade with no hard edge on any side.
+ */
+@utility hover-veil {
+  position: relative;
+  isolation: isolate;
+}
+
+@utility hover-veil-fill {
+  &::before {
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    content: "";
+    background-image: radial-gradient(135% 200% at 0% 50%, var(--color-veil) 0%, transparent 72%);
+    border-radius: inherit;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 220ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+}
+
+@utility hover-veil-active {
+  &::before {
+    opacity: 1;
+  }
+}
+
+/*
+ * One easing curve for the whole product.
+ *
+ * Interaction states were using three different curves, which is why motion
+ * felt inconsistent even where each animation was individually smooth. This is
+ * a decelerating curve, so something arriving settles rather than stopping dead.
+ */
+@utility ease-ui {
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * A glass edge, and the one exception to the single easing curve.
+ *
+ * The ring is a gradient clipped to a 1px border by masking the content box
+ * away, which is the only way to get a gradient border that keeps a real
+ * gradient behind it. A flat `border-line-strong` was tried first and read as a
+ * form field outline rather than as a lit surface.
+ *
+ * The ::before carries the pane itself: a faint fill, a one pixel highlight
+ * along the top edge where the light would catch, and a halo so the pane sits
+ * above the rail instead of being cut into it. There is no `backdrop-filter`
+ * because the rail behind it is a flat fill, so blurring it would cost a
+ * compositing layer and change nothing that a screenshot could see.
+ *
+ * The curve overshoots slightly. This is the one marker in the product that
+ * travels between two positions, and a decelerate-only curve made a long
+ * journey read as a slow drag. The settle is what makes it read as a glide.
+ */
+@utility glass-outline {
+  padding: 1px;
+  background-image: linear-gradient(
+    150deg,
+    var(--glass-line-a),
+    var(--glass-line-b) 42%,
+    var(--glass-line-a)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  &::before {
+    position: absolute;
+    inset: 1px;
+    content: "";
+    border-radius: inherit;
+    background-image: linear-gradient(155deg, var(--glass-fill-a), var(--glass-fill-b) 60%);
+    box-shadow:
+      inset 0 1px 0 var(--glass-sheen),
+      0 0 0 1px var(--glass-glow);
+  }
+}
+
+@utility ease-glide {
+  transition-timing-function: cubic-bezier(0.32, 1.2, 0.36, 1);
 }
 
 @utility pressable {
@@ -172,7 +339,6 @@
 }
 
 @utility numeric {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -185,19 +351,38 @@
 }
 
 @utility palette-overlay {
-  animation: palette-fade 120ms ease-out both;
+  animation: palette-fade 180ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 @utility palette-dialog {
-  animation: palette-in 150ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: palette-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+/**
+ * The rail settles in once on first paint. One orchestrated moment reads as
+ * considered; an animation on every row would read as noise.
+ */
+@utility rail-body {
+  animation: rail-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rail-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @utility drawer-backdrop {
-  animation: palette-fade 140ms ease-out both;
+  animation: palette-fade 180ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 @utility drawer-panel {
-  animation: drawer-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: drawer-in 260ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
 @utility cursor-blink {
@@ -231,7 +416,7 @@
 @keyframes palette-in {
   from {
     opacity: 0;
-    transform: translateY(-6px) scale(0.97);
+    transform: translateY(-10px) scale(0.975);
   }
   to {
     opacity: 1;

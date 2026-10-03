@@ -17,10 +17,10 @@ export const PageHeader = ({
   children,
   className,
 }: PageHeaderProps) => (
-  <header className={cn("mb-8", className)}>
+  <header className={cn("mb-10", className)}>
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
       {count !== undefined ? (
-        <span className="numeric text-title leading-none font-semibold text-ink">{count}</span>
+        <span className="numeric text-lead leading-none font-semibold text-ink">{count}</span>
       ) : null}
 
       <h1 className="text-title leading-tight font-semibold tracking-[-0.01em] text-ink">
@@ -31,7 +31,7 @@ export const PageHeader = ({
     </div>
 
     {description ? (
-      <p className="mt-2 max-w-[62ch] text-body leading-relaxed text-pretty text-ink-2">
+      <p className="mt-3 max-w-[46ch] text-lead leading-relaxed text-pretty text-ink-2">
         {description}
       </p>
     ) : null}

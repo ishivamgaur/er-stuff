@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
-import { Geist_Mono } from "next/font/google"
+import { Geist } from "next/font/google"
 import { SidebarRail } from "@/components/layout/sidebar-rail"
 import { Toolbar } from "@/components/layout/toolbar"
 import { CATEGORIES } from "@/config/categories"
-import { PRIMARY_NAVIGATION } from "@/config/navigation"
+import { NAV_GROUPS } from "@/config/navigation-groups"
 import { SITE, SITE_URL } from "@/config/site"
 import { findCategoryToolCounts } from "@/lib/db/categories"
 import { findTotalToolCount } from "@/lib/db/tools"
@@ -12,8 +12,16 @@ import type { Viewer } from "@/components/layout/viewer"
 import { SmoothScroll } from "@/components/layout/smooth-scroll"
 import "./globals.css"
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+/**
+ * One family, Geist, for everything.
+ *
+ * A second monospace face was reserved for data, which is a real idea, but two
+ * families in one product reads as unresolved rather than intentional, and the
+ * numbers never needed the extra width. Tabular figures carry the data instead,
+ * which is the part that actually mattered.
+ */
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
   display: "swap",
 })
@@ -48,36 +56,29 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const viewer: Viewer | null = user ? { id: user.id, email: user.email, role: user.role } : null
   const countBySlug = counts
 
-  const navigation = PRIMARY_NAVIGATION.map((item) => ({
-    ...item,
-    initial: item.label.slice(0, 2),
-  }))
-
-  const sections = CATEGORIES.map((category) => ({
-    label: category.name,
-    href: `/categories/${category.slug}`,
-    count: countBySlug.get(category.slug) ?? 0,
-    initial: category.name.slice(0, 2),
-  }))
+  const hrefCounts = new Map<string, number>()
+  for (const category of CATEGORIES) {
+    hrefCounts.set(`/categories/${category.slug}`, countBySlug.get(category.slug) ?? 0)
+  }
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistMono.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${geist.variable} h-full antialiased`}>
       <body className="min-h-full">
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <SmoothScroll />
         <div className="mx-auto flex w-full max-w-6xl">
           <SidebarRail
             identity={IDENTITY}
-            navigation={navigation}
-            sections={sections}
+            groups={NAV_GROUPS}
+            counts={hrefCounts}
             viewer={viewer}
           />
           <div className="flex min-w-0 flex-1 flex-col">
             <Toolbar
               total={total}
               identity={IDENTITY}
-              navigation={navigation}
-              sections={sections}
+              groups={NAV_GROUPS}
+              counts={hrefCounts}
               viewer={viewer}
             />
             <main className="min-w-0 flex-1 px-5 py-8 sm:px-8">{children}</main>

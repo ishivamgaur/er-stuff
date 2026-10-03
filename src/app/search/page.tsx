@@ -28,7 +28,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div>
       <section className="border-b border-dashed border-line py-6">
         <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-          <span className="font-mono text-micro tabular-nums text-ink-3">{hits.length}</span>
+          <span className="numeric text-micro text-ink-3">{hits.length}</span>
           <h1 className="text-lead leading-tight font-bold tracking-tight text-ink">Search</h1>
         </div>
         <p className="mt-1.5 max-w-[62ch] text-body leading-snug text-ink-3">

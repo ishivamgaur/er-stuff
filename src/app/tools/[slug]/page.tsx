@@ -106,11 +106,11 @@ const TagGroup = ({ title, items }: { title: string; items: string[] }) => {
 
   return (
     <div>
-      <p className="text-micro text-ink-4">{title}</p>
+      <p className="text-micro font-semibold tracking-wider text-ink-4 uppercase">{title}</p>
       <ul className="mt-1.5 flex flex-wrap gap-x-1.5 gap-y-1">
         {items.map((item) => (
           <li key={item} className="text-small text-ink-2">
-            [{item}]
+            {item}
           </li>
         ))}
       </ul>
@@ -186,9 +186,9 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
             <a
               key={category.slug}
               href={`/categories/${category.slug}`}
-              className="text-small text-ink-3 hover:text-accent"
+              className="text-small text-ink-3 transition-colors duration-150 hover:text-accent"
             >
-              [{category.name}]
+              {category.name}
             </a>
           ))}
 

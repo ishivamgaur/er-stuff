@@ -131,6 +131,62 @@ for (const path of ["/free", "/categories"]) {
   check(`no horizontal overflow on ${path}`, !(await hasHorizontalOverflow(page)))
 }
 
+// Type consistency, measured rather than assumed. The rail and the drawer show
+// the same navigation, so they must resolve to the same font size.
+//
+// These run as source strings rather than closures. esbuild renames inner
+// functions, which injects a `__name` helper that does not exist in the page,
+// and the evaluate dies with "__name is not defined".
+{
+  const railSize = (await page.evaluate(`
+    (() => {
+      const el = document.querySelector('aside a[href="/free"]')
+      return el ? getComputedStyle(el).fontSize : null
+    })()
+  `)) as string | null
+
+  await page.setViewportSize(MOBILE)
+  await page.getByRole("button", { name: "Open navigation" }).click()
+  await page.waitForTimeout(300)
+
+  const drawerSize = (await page.evaluate(`
+    (() => {
+      const dialog = document.querySelector('[role="dialog"]')
+      if (!dialog) return null
+      const links = dialog.querySelectorAll('a')
+      for (const a of links) {
+        if (a.getAttribute('href') === '/free') return getComputedStyle(a).fontSize
+      }
+      return null
+    })()
+  `)) as string | null
+
+  check(
+    "rail and drawer render navigation at one size",
+    railSize !== null && railSize === drawerSize,
+    `rail=${railSize} drawer=${drawerSize}`,
+  )
+
+  const headingSize = (await page.evaluate(`
+    (() => {
+      const el = document.querySelector('main h1')
+      return el ? getComputedStyle(el).fontSize : null
+    })()
+  `)) as string | null
+  const bodySize = (await page.evaluate(`
+    (() => {
+      const el = document.querySelector('main p')
+      return el ? getComputedStyle(el).fontSize : null
+    })()
+  `)) as string | null
+
+  check(
+    "h1 is larger than body",
+    Number.parseFloat(headingSize ?? "0") > Number.parseFloat(bodySize ?? "0"),
+    `h1=${headingSize} body=${bodySize}`,
+  )
+}
+
 await browser.close()
 
 console.log(results.join("\n"))

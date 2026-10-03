@@ -2,13 +2,10 @@
 
 import { useState } from "react"
 import { authClient } from "@/lib/auth/client"
-
-type GoogleButtonProps = {
-  mode: "signin" | "signup"
-}
+import { AUTH_ERRORS } from "@/lib/auth/errors"
 
 const GoogleMark = () => (
-  <svg aria-hidden viewBox="0 0 18 18" className="size-3.5 shrink-0">
+  <svg aria-hidden viewBox="0 0 18 18" className="size-4 shrink-0">
     <path
       fill="#4285F4"
       d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z"
@@ -26,50 +23,40 @@ const GoogleMark = () => (
 )
 
 /**
- * The button is only rendered when Google credentials are configured on the
- * server, so nobody is offered a sign in that cannot complete.
+ * Rendered only when Google credentials exist, so nobody is offered a sign in
+ * that cannot complete. See the server page that decides.
  */
-export const GoogleButton = ({ mode }: GoogleButtonProps) => {
+export const GoogleButton = () => {
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   return (
     <>
-      <div className="flex items-center gap-3 pt-1">
-        <span aria-hidden className="h-px flex-1 bg-line" />
-        <span className="shrink-0 text-micro text-ink-4">or</span>
-        <span aria-hidden className="h-px flex-1 bg-line" />
-      </div>
-
       <button
         type="button"
         disabled={isPending}
         onClick={async () => {
           setError(null)
           setIsPending(true)
-
           const { error: signInError } = await authClient.signIn.social({
             provider: "google",
-            callbackURL: mode === "signin" ? "/account" : "/submit",
+            callbackURL: "/submit",
           })
-
           if (signInError) {
-            setError("Google sign in did not complete. Try again, or use a password.")
+            setError(AUTH_ERRORS.generic)
             setIsPending(false)
-            return
           }
         }}
-        className="flex w-full items-center justify-center gap-2 border border-line bg-field px-4 py-2.5 text-body text-ink transition-colors hover:border-line-strong disabled:opacity-60"
+        className="group flex w-full items-center justify-center gap-2.5 border border-line bg-field px-4 py-2.5 text-body text-ink transition-[background-color,border-color,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:border-line-strong hover:bg-field/60 active:scale-[0.98] disabled:opacity-60"
       >
         <GoogleMark />
-        {isPending ? "Opening Google" : "Continue with Google"}
+        <span className="transition-opacity duration-150 group-hover:opacity-80">
+          {isPending ? "Opening Google" : "Continue with Google"}
+        </span>
       </button>
 
       {error ? (
         <p role="alert" className="border-l-2 border-destructive bg-field px-3 py-2 text-small">
-          <span aria-hidden className="mr-1.5 text-destructive">
-            !
-          </span>
           {error}
         </p>
       ) : null}

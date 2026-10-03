@@ -72,6 +72,7 @@ local values.
 | `db:seed:tools` | upserts tool seed data |
 | `db:capture-previews` | visits every tool site, saves a screenshot and favicon |
 | `check:mobile` | Playwright assertions for the drawer, overflow, focus and scroll lock |
+| `check:nav` | asserts the rail outline glides, follows hover, click and keyboard focus, and that no row draws a second outline |
 | `audit:orphans` | reachability graph from the Next entry points, lists unreachable modules |
 | `check:auth` | Playwright assertions for signup, session, submission, guards, signout |
 | `db:promote` | grants the admin role to one account, the only way in |
@@ -276,10 +277,17 @@ reading a word. It is a principle, not a costume.
 - **Do not render literal markdown markers.** An earlier pass put `#`, `##` and
   ``` fences into the UI. It was tried and reverted, it read as a document
   rather than a product. Structure comes from spacing, one hairline and weight.
-- `src/components/icons/index.tsx` is the only icon set. One 16 unit grid, one
-  1.5 stroke, `currentColor` only, `aria-hidden` because every icon has a text
-  label beside it. Do not add an icon library and do not hand roll a second SVG
-  inline in a component.
+- `src/components/icons/index.tsx` is the only icon set and the only place a glyph
+  is ever chosen. The artwork is Lucide, wrapped rather than re-exported, so the
+  entry point keeps the house rules: 24 unit grid at 16px, stroke 1.5 so it
+  lands on exactly 1px, the same hairline as `border-line`, `currentColor` only,
+  `aria-hidden` because every icon has a text label beside it. The stroke is tied
+  to the size, because on a 24 unit grid 1.5 at 16px is 1px and the same stroke
+  at 18px is thinner than a hairline. The rule that survived the swap is the ban,
+  not the source: no second icon set and no inline SVG in a component. Two
+  directions were tried first and rejected. A hand drawn set read as a
+  wireframe at 16px, and Lucide at its default stroke 2 read as product app
+  chrome next to monospace type.
 - `DetailList` in `components/tools/detail-panel.tsx` is the facts list. Field
   names are real camelCase, for example `pricing.freeTier`, so the page matches
   the shape of the data.
@@ -315,6 +323,13 @@ ink-4      #6e6e75         #83837b
 accent     #2f9bff         #0b6bcb
 ```
 
+The glass pair, per theme, is six more values: `--glass-line-a`,
+`--glass-line-b`, `--glass-fill-a`, `--glass-fill-b`, `--glass-sheen` and
+`--glass-glow`. They exist as tokens rather than as literals because light mode
+inverts the glass rather than reusing the dark values: a white edge on an off
+white page is invisible, so the ring is cut with the ink colour and the sheen is
+the only white left in it.
+
 Muted greys are at or above 4.5:1 on both backgrounds. Do not reintroduce
 low `opacity-50` or `opacity-70` on text. It was tried and it failed contrast.
 
@@ -323,8 +338,31 @@ Type scale: `text-micro` 11px, `text-small` 12px, `text-body` 13px,
 
 ### Rules
 
-- Only one accent colour, used for the wordmark, active nav, links and the
-  primary button.
+- Only one accent colour, used for the wordmark, links and the primary button.
+  The sidebar rail is the exception and carries no accent at all: the current
+  section is a 1px `line-strong` outline with the label at full `ink`. Accent on
+  the active row was tried, in a fill and as a left bar, and both read as
+  product app chrome rather than as an index.
+- The rail row is 28px, `min-h-7`, at `px-2.5` with a `size-5` icon slot, and
+  rows sit 4px apart. 40px and then 32px rows were tried and thirteen of them read
+  as a column of cards. The gap is not decoration: with no gap the rows merge
+  into one block and the ring around a single row stops reading as a box.
+- One glass outline marks the current section, and it glides. `NavOutline` in
+  `sidebar-rail.tsx` is a single absolutely positioned sibling that sits on the
+  hovered row, or on the current section when nothing is hovered, so the same
+  mark answers "where am I looking" and "where am I". Per row outlines cannot
+  animate between each other, they only cross fade, and they double up on the
+  active row. The rows therefore carry no outline of their own, and
+  `npm run check:nav` fails if one ever does. It measures with rects, not
+  `offsetTop`, because offset values are rounded to whole pixels and a box that
+  steps one pixel at a time does not read as a glide. It also re-measures on
+  `animationend`, since the rail's entrance is a transform and a transform never
+  fires `ResizeObserver`.
+- `glass-outline` in `globals.css` is a gradient clipped to a 1px ring by masking
+  the content box away, with the pane itself on a `::before`: a faint fill, a 1px
+  top highlight, and a halo so it sits above the rail. No `backdrop-filter`,
+  because the rail behind it is a flat fill, so blurring would cost a compositing
+  layer and change nothing a screenshot could see.
 - The sponsored card is the only element with a background fill.
 - Tags, prices and category names render as `[bracketed]`, not pills. Pills were
   tried on subcategories and tags and they looked foreign to the design.
@@ -347,6 +385,13 @@ Type scale: `text-micro` 11px, `text-small` 12px, `text-body` 13px,
 - The preview is `pointer-events-none` and hidden below `lg`.
 - Palette opens on Ctrl/Cmd+K, 30rem wide, no backdrop blur, 150ms fade and
   scale.
+- One easing curve for the product, `ease-ui`, `cubic-bezier(0.22, 1, 0.36, 1)`.
+  Interaction states were using three curves, which is why motion felt
+  inconsistent even where each animation was individually smooth. The one
+  exception is `ease-glide` on the rail outline, which overshoots slightly. It
+  is the only marker that travels between two positions, and a decelerate-only
+  curve made a long journey read as a slow drag. The settle is what makes it
+  read as a glide.
 
 ### Responsive
 
@@ -355,6 +400,17 @@ Type scale: `text-micro` 11px, `text-small` 12px, `text-body` 13px,
 - The rail is 15rem, collapses to 3.5rem on a toggle, and remembers that in
   localStorage. Below `lg` it is a drawer instead. Do not derive collapse from a
   media query, that resets the preference on every reload.
+- The wordmark is a fixed strip at the top of the rail, the same height as the
+  toolbar beside it and sharing its bottom hairline, so the two read as one
+  header bar. It sits outside the scroll area, so the logo cannot scroll away.
+  The tagline does not appear in the rail at all. A four line paragraph above the
+  nav pushed the nav down and repeated the homepage, and it was removed from the
+  rail and the drawer together. `SITE.tagline` is still the metadata description.
+- The sidebar uses two type sizes and no more: `text-body` for anything you can
+  click, including the wordmark and the footer, and `text-small` for anything
+  that annotates a row, meaning counts, the section eyebrow and the account
+  email. It carried five sizes before, at 11, 12, 14 and 16px, and the rail read
+  as a stack of unrelated components rather than as one list.
 - Only `sm:` and `lg:` are used. The design has no other breakpoints.
 - Smooth scrolling is Lenis, mounted once in the root layout. `syncTouch` stays
   off because hijacking touch scroll breaks momentum, and it is skipped entirely

@@ -32,6 +32,6 @@ export const PricingBadge = ({ type, className }: PricingBadgeProps) => (
       className,
     )}
   >
-    [{LABELS[type]}]
+    {LABELS[type]}
   </span>
 )

@@ -11,10 +11,10 @@ type IndexRowProps = {
 }
 
 export const IndexRow = ({ tool, basePath = "/tools" }: IndexRowProps) => (
-  <div className="group/row flex min-w-0 items-center rounded-chip transition-opacity duration-200 ease-out has-[:focus-visible]:opacity-100 pointer-fine:group-hover/list:opacity-[0.42] pointer-fine:hover:opacity-100">
+  <div className="group/row flex min-w-0 items-center border-b border-line/60 transition-opacity duration-200 ease-out last:border-b-0 has-[:focus-visible]:opacity-100 pointer-fine:group-hover/list:opacity-[0.42] pointer-fine:hover:opacity-100">
     <Link
       href={`${basePath}/${tool.slug}`}
-      className="flex min-w-0 flex-1 items-start gap-2.5 py-2 pr-2.5 pl-2.5 underline decoration-transparent decoration-from-font underline-offset-[0.3em] transition-[text-decoration-color,background-color] duration-150 group-hover/row:decoration-current group-focus-visible/row:decoration-current group-hover/row:bg-field active:scale-[0.995] sm:items-center"
+      className="flex min-w-0 flex-1 items-start gap-3 py-2.5 pr-2.5 pl-2 underline decoration-transparent decoration-from-font underline-offset-[0.3em] transition-[text-decoration-color,background-color] duration-150 group-hover/row:decoration-current group-focus-visible/row:decoration-current group-hover/row:bg-field active:scale-[0.995] sm:items-center"
     >
       <ToolLogo
         name={tool.name}
@@ -75,10 +75,10 @@ export const IndexGroup = ({
         <span className="text-lead leading-tight font-bold tabular-nums text-ink">{count}</span>
       ) : null}
       {title ? (
-        <h2 className="text-lead leading-tight font-bold tracking-tight text-ink">{title}</h2>
+        <h2 className="text-lead leading-snug font-semibold tracking-tight text-ink">{title}</h2>
       ) : null}
       {description ? (
-        <p className="w-full min-w-0 text-small text-pretty text-ink-3 sm:w-auto sm:flex-1 sm:truncate">
+        <p className="w-full min-w-0 text-small leading-relaxed text-pretty text-ink-3 sm:w-auto sm:flex-1 sm:truncate">
           {description}
         </p>
       ) : null}

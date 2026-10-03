@@ -25,11 +25,21 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
  */
 export const isGoogleEnabled = Boolean(googleClientId && googleClientSecret)
 
+/**
+ * Auth is Google only, so when the credentials are missing there is no way in
+ * at all. The shell says so rather than showing a form that cannot work.
+ */
+export const isAuthAvailable = isGoogleEnabled
+
 export const auth = betterAuth({
   database: mongodbAdapter(db),
+  /**
+   * Google only. Password accounts are off on purpose: a 12 character password
+   * nobody can reset, with no verification email, is worse than not offering
+   * passwords at all. See D30.
+   */
   emailAndPassword: {
-    enabled: true,
-    minPasswordLength: 12,
+    enabled: false,
   },
   socialProviders: isGoogleEnabled
     ? {

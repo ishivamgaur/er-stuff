@@ -3,109 +3,6 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils/cn"
 
-const SIMPLE_ICON_ALIASES: Record<string, string> = {
-  fly: "flyio",
-  "amazon-s3": "amazons3",
-  "radix-ui": "radix",
-  "shadcn-ui": "shadcn",
-  "tailwind-css": "tailwindcss",
-  nextjs: "nextdotjs",
-}
-
-const SIMPLE_ICON_SLUGS = new Set([
-  "vercel",
-  "supabase",
-  "planetscale",
-  "railway",
-  "neon",
-  "turso",
-  "clerk",
-  "auth0",
-  "workos",
-  "cloudflare",
-  "netlify",
-  "digitalocean",
-  "hetzner",
-  "flyio",
-  "render",
-  "aws",
-  "googlecloud",
-  "azure",
-  "postgresql",
-  "mongodb",
-  "redis",
-  "prisma",
-  "drizzle",
-  "docusaurus",
-  "gitbook",
-  "mintlify",
-  "notion",
-  "obsidian",
-  "figma",
-  "excalidraw",
-  "linear",
-  "raycast",
-  "slack",
-  "discord",
-  "github",
-  "gitlab",
-  "docker",
-  "grafana",
-  "prometheus",
-  "sentry",
-  "posthog",
-  "plausible",
-  "mixpanel",
-  "amplitude",
-  "clarity",
-  "hotjar",
-  "datadog",
-  "newrelic",
-  "stripe",
-  "paddle",
-  "lemonsqueezy",
-  "paypal",
-  "razorpay",
-  "resend",
-  "postmark",
-  "sendgrid",
-  "mailgun",
-  "brevo",
-  "cloudinary",
-  "imagekit",
-  "uploadthing",
-  "amazon-s3",
-  "algolia",
-  "typesense",
-  "meilisearch",
-  "elasticsearch",
-  "opensearch",
-  "pinecone",
-  "openai",
-  "anthropic",
-  "huggingface",
-  "langchain",
-  "cursor",
-  "githubcopilot",
-  "windsurf",
-  "zed-industries",
-  "jetbrains",
-  "spline",
-  "umami",
-  "tldraw",
-  "caddy",
-  "nginx",
-  "nextdotjs",
-  "astro",
-  "tailwindcss",
-  "radix-ui",
-  "shadcnui",
-  "vercel-ai-sdk",
-  "cloudflare-r2",
-])
-
-const SIMPLE_ICONS_HOST = "https://cdn.simpleicons.org"
-
 const BACKGROUND_PALETTE = [
   "#1c2b4d",
   "#2b1c3d",
@@ -144,9 +41,7 @@ const TOOL_SIZE_CLASS = "size-5 shrink-0"
 
 export const ToolLogo = ({ name, slug, logoUrl, className }: ToolLogoProps) => {
   const [hasFailed, setHasFailed] = useState(false)
-  const iconSlug = SIMPLE_ICON_ALIASES[slug] ?? slug
-  const source =
-    logoUrl ?? (SIMPLE_ICON_SLUGS.has(iconSlug) ? `${SIMPLE_ICONS_HOST}/${iconSlug}` : null)
+  const source = logoUrl
 
   if (hasFailed || !source) {
     return (
@@ -154,7 +49,7 @@ export const ToolLogo = ({ name, slug, logoUrl, className }: ToolLogoProps) => {
         aria-hidden
         className={cn(
           TOOL_SIZE_CLASS,
-          "grid place-items-center rounded-[5px] text-[9px] font-bold text-white",
+          "grid place-items-center rounded-[5px] text-micro font-bold text-white",
           className,
         )}
         style={{ backgroundColor: BACKGROUND_PALETTE[hashSlug(slug) % BACKGROUND_PALETTE.length] }}

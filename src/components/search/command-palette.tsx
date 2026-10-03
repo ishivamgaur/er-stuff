@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { CATEGORIES } from "@/config/categories"
 import { PRIMARY_NAVIGATION } from "@/config/navigation"
+import { SearchIcon } from "@/components/icons"
 import { cn } from "@/lib/utils/cn"
 
 type PaletteItem = {
@@ -166,22 +167,17 @@ export const CommandPalette = () => {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex h-8 items-center gap-1.5 rounded-chip px-1.5 text-ink-3 transition-colors hover:bg-field hover:text-ink active:scale-[0.98]"
+        aria-label="Search"
+        className={cn(
+          "hover-veil group flex h-8 items-center gap-1.5 rounded-chip pr-1.5 pl-2",
+          "hover-veil-fill text-ink-3 transition-colors duration-200",
+          "ease-[cubic-bezier(0.2,0,0,1)] hover:hover-veil-active hover:text-ink",
+          "active:scale-[0.98]",
+        )}
       >
-        <svg
-          aria-hidden
-          viewBox="0 0 16 16"
-          className="size-3.5 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <circle cx="7" cy="7" r="4.5" />
-          <path d="M10.5 10.5 14 14" strokeLinecap="round" />
-        </svg>
-        <span className="text-small">Search</span>
-        <span className="kbd">Ctrl</span>
-        <span className="kbd">K</span>
+        <SearchIcon className="transition-transform duration-200 group-hover:-translate-y-px" />
+        <span className="hidden text-small sm:inline">Search</span>
+        <span className="kbd hidden sm:inline-flex">Ctrl K</span>
       </button>
     )
   }
@@ -192,14 +188,14 @@ export const CommandPalette = () => {
         type="button"
         aria-label="Close search"
         onClick={close}
-        className="palette-overlay absolute inset-0 bg-page/70"
+        className="palette-overlay absolute inset-0 bg-overlay"
       />
 
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Search erstuff"
-        className="palette-dialog relative w-full max-w-[30rem] overflow-hidden rounded-chip border border-line-strong bg-surface shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+        className="palette-dialog relative w-full max-w-[26rem] overflow-hidden rounded-control border border-line-strong bg-surface shadow-[0_24px_64px_rgb(0_0_0/0.55)]"
       >
         <div className="flex items-center gap-2 border-b border-line-strong bg-field px-3 py-2.5">
           <svg
@@ -246,7 +242,7 @@ export const CommandPalette = () => {
                   )}
                 >
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  <span className="shrink-0 font-mono text-micro text-ink-3">{item.group}</span>
+                  <span className="shrink-0 text-micro text-ink-3">{item.group}</span>
                 </button>
               </li>
             ))

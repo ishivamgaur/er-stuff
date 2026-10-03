@@ -1,13 +1,10 @@
 /**
- * Auth errors are written for a reader, not a developer. They never reveal
- * whether an address has an account, because that turns the sign in form into
- * an account enumeration tool.
+ * Auth is Google only, so these are the failures a reader can actually hit.
+ * They are written for a person, not a developer, and they never reveal whether
+ * an address has an account.
  */
 export const AUTH_ERRORS = {
-  invalidCredentials: "That email and password do not match an account.",
-  emailTaken: "That email already has an account. Sign in instead.",
-  weakPassword: "Use at least 12 characters. Longer beats complicated.",
-  invalidEmail: "That does not look like an email address.",
-  rateLimited: "Too many attempts. Wait a minute and try again.",
-  generic: "That did not work. Try again.",
+  providerUnavailable: "Google sign in is not available on this deployment. Try again later.",
+  cancelled: "Sign in was cancelled. Nothing was saved.",
+  generic: "Sign in did not complete. Try again.",
 } as const
