@@ -1,109 +1,135 @@
 /**
  * The one icon entry point.
  *
- * The artwork is Lucide, not hand drawn. A hand drawn set was tried first and
- * replaced: at 16px it read as a wireframe, and a directory that renders
- * 48 logos already has enough custom marks. Lucide is a single 24 unit grid
- * with one stroke weight and `currentColor` throughout, so it stays consistent
- * with the 1px hairline language without anyone maintaining paths.
+ * The artwork is Reicon, not hand drawn and not Lucide. reicon-react ships
+ * two weights; this project uses duotone where the beta BoldDuotone set has
+ * the glyph, and `Filled` everywhere else. Duotone is the same base path as
+ * Filled with a detail path at half opacity, so the two still read as one
+ * set, and both paint through `currentColor` so the theme owns the colour.
+ * Outline is never used: it reads as wireframe next to dense monospace type.
  *
  * Everything is wrapped rather than re-exported so the project keeps one import
  * surface and one set of house rules:
- * - 24 unit grid at 16px, stroke 1.5, which lands on exactly 1px, the same
- *   hairline as `border-line`. The library default of 2 was tried and it reads
- *   as product app chrome next to monospace type, which is the whole design
- *   language. The stroke is tied to the size: on a 24 unit grid a 1.5 stroke at
- *   16px is 1px, and the same stroke at 18px would be thinner than a hairline.
- * - `size-4` and `shrink-0` baked in, so a bare icon is never misaligned
+ * - weight is decided here (duotone, else Filled); no call site picks it
+ * - `size-4` and `shrink-0` baked in, so a bare icon is never misaligned.
+ *   Reicon renders `width`/`height` attributes at 24; the class wins.
  * - `aria-hidden`, because every icon here sits next to a text label
+ *
+ * The generated shadcn files under `src/components/ui/` import reicon-react
+ * directly instead of through here, the same escape hatch they had with
+ * Lucide. None of their glyphs exist in the duotone set, so they pass
+ * `weight="Filled"` at the call site. A future `shadcn add` will reintroduce
+ * lucide-react imports; re-map them before committing.
+ *
+ * The duotone subset is vendored by `npm run duotone:vendor` — when adding a
+ * glyph here that the set covers, add its reicon name to the script's list.
  */
 
 import {
-  AppWindow,
+  AlertCircle,
+  ArrowUpRightSquare,
+  Bullhorn,
   Check,
   ChevronLeft,
-  CircleAlert,
-  CodeXml,
-  Compass,
+  Cloud,
+  Component,
   Database,
-  ExternalLink,
-  Globe,
-  KeyRound,
-  Layers,
-  LayoutGrid,
-  LogOut,
-  Megaphone,
+  Frame,
+  Gift,
+  Inbox,
+  InfoCircle,
+  Logout,
   Menu,
-  Moon,
-  PenTool,
+  Palette,
   Plus,
-  Rocket,
   Search,
   Server,
-  Sparkles,
-  Sun,
-  Terminal,
-  Ticket,
+  Shapes,
+  ShieldCheck,
+  Ship,
+  Sparkle,
+  Telescope,
+  TerminalSquare,
   User,
   X,
-  type LucideIcon,
-} from "lucide-react"
-import { cn } from "@/lib/utils/cn"
+  type IconComponent,
+} from "reicon-react"
+import { cn } from "@/lib/utils"
+import { DUOTONE } from "./duotone-data"
 
 type IconProps = {
   className?: string
 }
 
-const STROKE_WIDTH = 1.5
+const kebab = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()
 
 /**
  * Every icon is the same component with a different glyph, so the wrapper is
  * generated once. It is a named function rather than an arrow so the component
- * keeps a name in the React tree and in DevTools.
+ * keeps a name in the React tree and in DevTools. The duotone lookup happens
+ * at module scope, once, from the glyph's own display name.
  */
-const icon = (Glyph: LucideIcon) =>
-  function Icon({ className }: IconProps) {
+const icon = (Glyph: IconComponent) => {
+  const duotone = Glyph.displayName ? DUOTONE[kebab(Glyph.displayName)] : undefined
+
+  return function Icon({ className }: IconProps) {
+    if (duotone) {
+      return (
+        <svg
+          aria-hidden
+          focusable={false}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          className={cn("reicon size-4 shrink-0", className)}
+          dangerouslySetInnerHTML={{ __html: duotone }}
+        />
+      )
+    }
+
     return (
       <Glyph
         aria-hidden
         focusable={false}
-        strokeWidth={STROKE_WIDTH}
+        weight="Filled"
         className={cn("size-4 shrink-0", className)}
       />
     )
   }
+}
 
 /** The prompt. The wordmark, not a logo mark, because it reads as a terminal. */
-export const PromptIcon = icon(Terminal)
+export const PromptIcon = icon(TerminalSquare)
 
 export const MenuIcon = icon(Menu)
 export const CloseIcon = icon(X)
 export const ChevronIcon = icon(ChevronLeft)
 export const SearchIcon = icon(Search)
 export const PlusIcon = icon(Plus)
-export const SignOutIcon = icon(LogOut)
-export const ExternalIcon = icon(ExternalLink)
-export const SunIcon = icon(Sun)
-export const MoonIcon = icon(Moon)
+export const SignOutIcon = icon(Logout)
+export const ExternalIcon = icon(ArrowUpRightSquare)
 export const CheckIcon = icon(Check)
-export const AlertIcon = icon(CircleAlert)
+export const AlertIcon = icon(AlertCircle)
+export const InfoIcon = icon(InfoCircle)
+export const InboxIcon = icon(Inbox)
 export const UserIcon = icon(User)
-export const MegaphoneIcon = icon(Megaphone)
+export const MegaphoneIcon = icon(Bullhorn)
 
 /*
- * Sidebar navigation icons. One metaphor per section, all from the same grid,
- * so no two rows in the list read as the same idea.
+ * The sidebar set. Each row gets a glyph with its own silhouette (a
+ * telescope for discovery, a gift for free, a shield for auth), so scanning
+ * the rail never means telling twelve near-identical outlines apart.
  */
-export const CompassIcon = icon(Compass)
-export const TicketIcon = icon(Ticket)
-export const DesignPenIcon = icon(PenTool)
-export const ModulesIcon = icon(LayoutGrid)
-export const BrowserIcon = icon(AppWindow)
-export const ServerIcon = icon(Server)
-export const DatabaseIcon = icon(Database)
-export const GlobeIcon = icon(Globe)
-export const LaunchIcon = icon(Rocket)
-export const SparkIcon = icon(Sparkles)
-export const KeyIcon = icon(KeyRound)
-export const CodeIcon = icon(CodeXml)
-export const LayersIcon = icon(Layers)
+export const TelescopeIcon = icon(Telescope)
+export const GiftIcon = icon(Gift)
+export const ShapesIcon = icon(Shapes)
+export const PaletteIcon = icon(Palette)
+export const ComponentIcon = icon(Component)
+export const FrameIcon = icon(Frame)
+export const ServerCogIcon = icon(Server)
+export const ShieldIcon = icon(ShieldCheck)
+export const DatabaseZapIcon = icon(Database)
+export const CloudIcon = icon(Cloud)
+export const ShipIcon = icon(Ship)
+export const BotIcon = icon(Sparkle)
+export const TerminalIcon = icon(TerminalSquare)

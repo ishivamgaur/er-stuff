@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/cn"
+import { cn } from "@/lib/utils"
 
 type VerifiedStateProps = {
   value: boolean | null
@@ -7,6 +7,10 @@ type VerifiedStateProps = {
   className?: string
 }
 
+/*
+ * A capability value. Unknown stays visibly unknown: "Not verified" in muted
+ * text, never a confident yes or no we have no basis for.
+ */
 export const VerifiedState = ({ value, trueLabel, falseLabel, className }: VerifiedStateProps) => {
   if (value === null) {
     return (
@@ -17,7 +21,7 @@ export const VerifiedState = ({ value, trueLabel, falseLabel, className }: Verif
   }
 
   return (
-    <span className={cn(value ? "text-ink" : "text-ink-3", className)}>
+    <span className={cn(value ? "font-medium text-ink" : "text-ink-3", className)}>
       {value ? trueLabel : falseLabel}
     </span>
   )

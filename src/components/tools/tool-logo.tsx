@@ -1,17 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import { cn } from "@/lib/utils/cn"
+import { cn } from "@/lib/utils"
 
+/*
+ * A gray ramp, not brand colours. The fallback tile has to read on both
+ * themes with white initials, so every step stays dark enough for that.
+ */
 const BACKGROUND_PALETTE = [
-  "#1c2b4d",
-  "#2b1c3d",
-  "#1c3326",
-  "#3d2b1c",
-  "#3d1c25",
-  "#1c3d3d",
-  "#2e2e3d",
-  "#33301c",
+  "#26262b",
+  "#2e2e34",
+  "#36363d",
+  "#3e3e46",
+  "#46464f",
+  "#4e4e58",
+  "#52525b",
+  "#5b5b65",
 ] as const
 
 const hashSlug = (slug: string): number => {
@@ -69,7 +73,7 @@ export const ToolLogo = ({ name, slug, logoUrl, className }: ToolLogoProps) => {
       loading="lazy"
       decoding="async"
       onError={() => setHasFailed(true)}
-      className={cn(TOOL_SIZE_CLASS, "object-contain", className)}
+      className={cn(TOOL_SIZE_CLASS, "rounded-[4px] object-contain ring-1 ring-line/50", className)}
     />
   )
 }

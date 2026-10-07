@@ -207,46 +207,90 @@ The audience remains developers.
 
 ---
 
-# 5. Core navigation taxonomy
+# 5. Core navigation architecture
 
-The navigation should answer:
+The navigation answers:
 
 > **"Where should I look for the kind of tool I need?"**
 
-The taxonomy does not need to perfectly describe software engineering.
+The architecture is a two-level index, in the shape popularised by
+designeer.xyz but built for software engineers:
 
-It only needs to make tool discovery easy.
+```text
+Sidebar                         Right side
+──────                          ──────────
+Navigation                      Page header
+  Build          ← selected     Sponsored rail
+  Components                     01 Section one  → full tool list
+  Frontend                       02 Section two  → full tool list
+  Backend                        03 Section three → full tool list
+  Data                           ...
+  Ship
+  AI
+Sections (of Build)
+  Editors & IDEs   ← scroll-spy highlights while scrolling
+  AI Coding
+  Agents & MCP
+  Git & Code Review
+  ...
+```
 
-Initial top-level categories:
+## Top-level navigation items
 
-1. Design
-2. Development
-3. AI
-4. Databases
-5. Backend & APIs
-6. Authentication
-7. Cloud & Hosting
-8. DevOps
-9. Security
-10. Testing
-11. Monitoring & Analytics
-12. Payments
-13. Email & Messaging
-14. Storage & Media
-15. Search
-16. Collaboration
-17. Project Management
-18. Documentation
-19. Developer Utilities
-20. Mobile
-21. Open Source
-22. Templates & Components
+Seven items. Each is a real route; each renders every one of its sections
+stacked on a single page.
 
-This list can evolve based on actual inventory and search behavior.
+| Nav item            | Route         | Sections                                                                                                            |
+| ------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Build** (default) | `/`           | Editors & IDEs · Terminals · AI Coding · Agents & MCP · Git & Code Review · Code Search & Issues · Testing & E2E    |
+| **Components**      | `/components` | Component Libraries · Headless UI · Forms & Tables · Charts · Motion & Animation                                    |
+| **Frontend**        | `/frontend`   | Design Inspiration · Design Systems & UI Kits · Fonts, Icons & Color · Frameworks · Styling & State · Accessibility |
+| **Backend**         | `/backend`    | Runtimes · APIs · Auth · Payments · Email · Queues & Jobs                                                           |
+| **Data**            | `/data`       | SQL · NoSQL · Vector · Cache · ORMs & Migrations · Database Hosting & GUIs · Storage & Files · Search               |
+| **Ship**            | `/ship`       | Hosting · Serverless & Edge · Deployment · CI/CD · Containers & IaC · Monitoring & Analytics                        |
+| **AI**              | `/ai`         | LLM APIs & Models · AI SDKs · RAG & Embeddings · Evaluation & Observability · Image & Video                         |
+
+## Section mapping rule
+
+Sections are groupings of the existing subcategory slugs, defined in
+`src/config/nav.ts`. Every subcategory is claimed by exactly one section — a
+coverage test enforces this, so no part of the directory becomes unreachable.
+The MongoDB category tree and every tool's `categoryIds` stay exactly as they
+are; there is no data migration. Sections reference subcategories, never the
+other way round.
+
+## Counts
+
+- A section count is the number of distinct tools in its subcategories.
+- A nav count is the number of distinct tools across all of its sections.
+- Distinct means a `Set` of tool ids. Never sum child counts — one tool in two
+  subcategories would be counted twice, and a nav total could exceed the size
+  of the directory. The product promise is trust; a wrong number breaks it.
+
+## Behaviour
+
+- Clicking a nav item navigates to its route. The sidebar's Sections block
+  then lists that nav's sections.
+- Scrolling the page moves the section highlight (IntersectionObserver
+  scroll-spy); the same floating fill used for nav rows rests on the current
+  section, so the sidebar always answers "where am I".
+- Clicking a section scrolls to it (Lenis glides) and the URL carries the
+  hash, so `/{nav}#{section}` is shareable and works across navigations.
+- The Sections block renders only on nav routes. On tool pages, `/free`,
+  auth and admin routes the sidebar shows Navigation plus footer links only.
+- `/free` stays as a dedicated view; it links from the sidebar footer.
+
+## Removed routes
+
+`/explore`, `/categories` and `/categories/[slug]` are deleted. `next.config.ts`
+carries permanent redirects: `/explore → /`, `/categories → /`, and each old
+category slug → its section anchor (`/categories/deployment → /ship#deployment`).
+The homepage `/` renders the default nav item (Build) directly; it is not a
+redirect. Build has no `/build` route — `/` is its canonical URL.
 
 ## Important taxonomy rule
 
-Do **not** make concepts such as these primary navigation categories:
+Do **not** make concepts such as these top-level navigation items:
 
 - REST
 - GraphQL
@@ -297,76 +341,43 @@ Features:
 
 # 6. Categories and sections
 
-Each category can contain smaller sections.
+Three levels exist, and each has a different job:
 
-Example:
+```text
+Nav item   Build                a route, a sidebar entry, a page
+  Section  Agents & MCP         a heading on that page, a scroll-spy anchor
+    Subcategory  ai-agents      the data plumbing: where tools are tagged
+```
 
-## Design
+- **Nav items and sections** live in `src/config/nav.ts`. They are the
+  information architecture the reader sees.
+- **Categories and subcategories** live in MongoDB (seeded from
+  `src/config/categories.ts`). They are how tools are tagged. Readers never
+  navigate the raw category tree any more — `/categories` is gone.
+- A section references a list of subcategory slugs. The mapping is a
+  partition: every subcategory belongs to exactly one section, enforced by a
+  test.
 
-- UI / UX
-- Prototyping
-- Design Systems
-- Wireframing
-- Design Collaboration
-- Motion & Animation
-- 3D
-- Design Inspiration
+Example, Build:
 
-## Development
+```text
+Build  (/)
+├── Editors & IDEs      ides-editors, extensions-plugins, dev-containers,
+│                       remote-development, whiteboards
+├── Terminals           terminals
+├── AI Coding           ai-coding-tools, ai-ides
+├── Agents & MCP        ai-agents
+├── Git & Code Review   git-clients, git-hosting, code-review
+├── Code Search & Issues  code-search, issue-tracking
+└── Testing & E2E       frontend-testing
+```
 
-- Code Editors
-- IDEs
-- AI Coding
-- Terminal & CLI
-- Browser Tools
-- Code Search
-- Developer Utilities
-- Extensions
+The same tool can belong to multiple relevant sections.
 
-## AI
-
-- AI Assistants
-- AI Coding
-- AI APIs
-- AI Agents
-- AI Search
-- AI Image
-- AI Video
-- AI Audio
-- AI Infrastructure
-
-## Databases
-
-- SQL
-- NoSQL
-- Vector Databases
-- Database Hosting
-- Database Management
-- Caching
-
-## Cloud & Hosting
-
-- Cloud Platforms
-- App Hosting
-- VPS
-- Serverless
-- Static Hosting
-- Edge Platforms
-- Deployment Platforms
-
-## DevOps
-
-- CI/CD
-- Containers
-- Infrastructure
-- Server Management
-- Secrets
-- Deployment
-- Infrastructure as Code
-
-The same tool can belong to multiple relevant categories.
-
-Do not duplicate the underlying tool record.
+Do not duplicate the underlying tool record — a section list is a query, not a
+copy. A tool that qualifies for two sections on the same page appears in both
+(consistent with how `/free` already lists a tool under "Free tier" and "Open
+source"), and each section's count reflects only what that section shows.
 
 ---
 
@@ -873,37 +884,25 @@ The comparison should present facts and meaningful differences.
 
 # 17. Homepage
 
-The homepage should immediately communicate:
-
-> Find the tools you need to build software.
-
-Core structure:
+The homepage **is** the default navigation item (Build). It renders the same
+content as any other nav page: header, sponsored rail, then every section in
+order. There is no separate marketing landing page.
 
 ```text
-Header
+/  =  Build
 
-Hero
-"Discover the tools you need to build software."
-
-Search
-
-Popular searches
-
-Popular categories
-
-Popular tools
-
-Recently added tools
-
-Useful collections / discovery sections
-
-Optional clearly-labelled sponsored placement
-
-Footer
+PageHeader
+Sponsored rail (clearly labelled)
+Editors & IDEs
+Terminals
+AI Coding
+Agents & MCP
+Git & Code Review
+Code Search & Issues
+Testing & E2E
 ```
 
-The homepage is a discovery entry point, not a marketing-heavy SaaS landing page.
-
+The homepage must immediately communicate the directory itself, not a pitch.
 Avoid unnecessary:
 
 - giant gradients
@@ -915,82 +914,31 @@ Avoid unnecessary:
 
 ---
 
-# 18. Explore page
+# 18. Explore page (removed)
 
-The explore page is the main directory experience.
+`/explore` no longer exists. Its two jobs moved:
 
-Conceptually:
+- The full flat list is now the nav pages — one page per nav item, every
+  section stacked, no pagination, no filters.
+- The sponsored rail sits at the top of every nav page, above the first
+  section.
 
-```text
-Explore developer tools
-
-[ Search tools... ]
-
-Filters                         Results
-
-Category                       Sponsored
-Pricing                        ----------------
-Open source                    Tool
-Self hosted                    Description
-API available                  Visit
-                                ----------------
-
-                               Organic tools
-                               ----------------
-                               Tool
-                               Tool
-                               Tool
-                               Tool
-```
-
-Sponsored content must be clearly labelled and visually separated from organic results.
+`/explore` redirects permanently to `/`.
 
 ---
 
-# 19. Categories page
+# 19. Categories page (removed)
 
-Categories should provide a simple way to browse the entire directory.
+`/categories` and `/categories/[slug]` no longer exist. Browsing happens
+through the nav items: the sidebar's Navigation block picks the page, the
+Sections block scrolls within it.
 
-Example:
+`/categories` redirects to `/`. Each old category slug redirects to the
+section that now owns its subcategories, for example
+`/categories/deployment → /ship#deployment`.
 
-```text
-Categories
-
-Design
-120 tools
-
-Development
-340 tools
-
-AI
-280 tools
-
-Databases
-90 tools
-
-Cloud & Hosting
-160 tools
-
-...
-```
-
-Category pages:
-
-```text
-/categories/ai
-/categories/databases
-/categories/design
-```
-
-Each category page can contain:
-
-- description
-- popular sections
-- featured organic tools
-- newest tools
-- filters
-- search within category
-
+Category data still exists in MongoDB — it is how tools are tagged, and the
+tool detail page still shows it — but no page renders the raw tree any more.
 ---
 
 # 20. Free and open-source discovery
@@ -1490,7 +1438,8 @@ Only create collections when the feature actually exists.
 - App Router
 - Tailwind CSS
 - shadcn/ui
-- Framer Motion where useful
+- No animation or smooth-scroll library; entrances are CSS and
+  IntersectionObserver only
 
 ## Database
 
@@ -1683,30 +1632,19 @@ The implementation should be designed around clarity and discovery.
 
 ## Primary navigation
 
-Possible:
+The sidebar has two blocks (see §5):
 
 ```text
-erstuff
+Navigation          Build · Components · Frontend · Backend · Data · Ship · AI
+Sections            the selected nav item's sections, scroll-spy highlighted
 
-Explore
-Categories
-Alternatives
-Compare
-Utilities
-
-Search
-
-Submit a Tool
-Login
+Footer              Free · Sponsors · account · Submit · Collapse
 ```
 
-Authenticated:
-
-```text
-Dashboard
-```
-
-The exact navigation can be simplified after implementation.
+The toolbar keeps search (palette), the account menu and the mobile hamburger.
+Routes: `/` (Build) plus `/components`, `/frontend`, `/backend`, `/data`,
+`/ship`, `/ai`, then `/free`, `/tools/[slug]`, `/search`, `/signup`,
+`/signin`, `/account`, `/submit`, `/admin/reviews`, `/sponsors`.
 
 ## Public experience
 
@@ -1755,6 +1693,18 @@ Prefer:
 - clear category navigation
 - fast scanning
 
+Section dividers are dashed hairlines: a solid rule between two blocks of equal
+weight reads as a table cell, and the index is not a table. Tags render as
+small labels with a dot. The palette is neutral with one accent: burgundy on
+neutral surfaces, deep wine on light and a lightened rose on dark, plus
+destructive red, which never moves. The primary button fills with the accent,
+links, counts and icons take it straight, and `free` is a burgundy dot plus a
+word. Row hovers and every surface stay gray — the accent marks state, it does
+not decorate. Headings are sentence case. Entrance
+motion is a short fade-and-rise with a blur, staggered down a list on first
+paint only; reading is never gated behind scroll animation, and everything
+stays off under prefers-reduced-motion.
+
 Avoid:
 
 - excessive gradients
@@ -1765,7 +1715,6 @@ Avoid:
 - decorative illustrations everywhere
 - noisy animations
 - unnecessary pill-shaped filters
-- dashed borders
 - generic SaaS landing-page patterns
 
 Animation should support interaction, not decorate every section.
@@ -1774,104 +1723,76 @@ Animation should support interaction, not decorate every section.
 
 # 40. Homepage information architecture
 
-The homepage should roughly contain:
+The homepage is the default nav page (Build). Its structure is the shared
+nav-page structure, defined once:
 
 ```text
-Header
+PageHeader
+  eyebrow, count in brand, title, description
 
-Hero
-  "Discover the tools you need to build software."
+SponsoredRail          (only when a campaign is active, labelled)
 
-Search
-
-Popular searches
-
-Categories
-
-Popular tools
-
-Recently added
-
-Useful discovery sections
-
-Optional sponsored placement
-
-Footer
+IndexGroup × N         one per section, in config order
+  count + title + description
+  tool rows
 ```
+
+Section anchors carry `id` and `data-section`; the sidebar scroll-spy watches
+them. Every nav page uses this same structure — there is exactly one page
+template for browsing.
 
 The final visual design is implementation work, not part of this plan.
 
 ---
 
-# 41. Explore information architecture
+# 41. Explore information architecture (removed)
 
-```text
-Explore
-
-Search
-
-Filters
-
-Results
-
-Sponsored section
-    ↓
-Organic results
-```
-
-Potential result metadata:
+`/explore` is gone; see §18. Its sponsored rail and flat result rows live on
+the nav pages now. Result row metadata is unchanged:
 
 ```text
 Tool name
 Short description
-Category
-Pricing
+Pricing badge
 Free tier
 Open source
 Self hosted
 Relevant tags
 ```
 
-Keep result cards scannable.
+Keep result rows scannable — one line per tool.
 
 ---
 
-# 42. Category information architecture
+# 42. Nav page information architecture
 
-Category page:
-
-```text
-Category title
-Description
-
-Popular sections
-
-Popular tools
-
-Newest tools
-
-Filters
-
-All tools
-```
-
-Example:
+Every nav page renders identically — header, sponsored rail, then all
+sections stacked:
 
 ```text
-AI
+AI                              (PageHeader: count, title, description)
 
-AI tools for developers.
+LLM APIs & Models               12
+OpenAI, Anthropic, ...
+...
 
-AI Coding
-AI APIs
-AI Agents
-AI Search
-AI Image
-AI Video
-
-Popular tools
+RAG & Embeddings                7
 ...
 ```
+
+Sidebar beside it:
+
+```text
+Navigation
+  AI                ← current page, glide box resting
+Sections
+  LLM APIs & Models ← glide box follows the scroll position
+  RAG & Embeddings
+  ...
+```
+
+The sidebar Sections block and the page sections are two views of the same
+config: `src/config/nav.ts` drives both, so they can never disagree.
 
 ---
 
@@ -1936,7 +1857,13 @@ Potential pages:
 
 ```text
 /tools/[slug]
-/categories/[slug]
+/                       (Build — the default nav page)
+/components
+/frontend
+/backend
+/data
+/ship
+/ai
 /alternatives/[slug]
 /compare/[slug]
 /free
@@ -2155,16 +2082,20 @@ This makes the public product trustworthy.
 
 ---
 
-## Phase 2 - Discovery engine
+## Phase 2 - Discovery engine and inventory
 
+- **Grow the inventory**: 48 → 250+ tools. Collect sources, batch entries,
+  keep the never-invent-data rule (§8) — unknown stays `null`, and nothing is
+  published without going through the seed/submission workflow. This is the
+  "dictionary" ambition; it is deliberately a separate phase from the
+  navigation rework, which ships first.
 - Improve search
-- Improve category pages
+- Improve nav pages (the §42 structure)
 - Improve filters
 - Improve tool pages
 - Add alternatives
 - Add related tools
 - Add SEO metadata
-- Add `/free`
 - Add `/open-source`
 - Add `/self-hosted`
 

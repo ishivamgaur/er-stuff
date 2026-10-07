@@ -16,7 +16,7 @@ const browser = await chromium.launch()
 const context = await browser.newContext({ viewport: MOBILE, deviceScaleFactor: 2 })
 const page = await context.newPage()
 
-await page.goto("http://localhost:3000/explore", { waitUntil: "networkidle" })
+await page.goto("http://localhost:3000/", { waitUntil: "networkidle" })
 
 // Drawer starts closed
 check("drawer hidden on load", (await page.locator('[role="dialog"]').count()) === 0)
@@ -73,15 +73,18 @@ const focusedInDrawer = await page.evaluate(() => {
 })
 check("focus moved into drawer", focusedInDrawer)
 
-// Navigation is actually reachable now
-check("category links in drawer", (await dialog.getByRole("link").count()) >= 12)
+// The drawer renders the same two blocks as the rail: the nav routes, then
+// the sections of the route the reader is on. Navigating closes the drawer;
+// a section row closes it and leaves a shareable hash behind.
+check("browse links in drawer", (await dialog.getByRole("link").count()) >= 14)
+check(
+  "sections listed for the current route",
+  (await dialog.locator('a[href="#terminals"]').count()) === 1,
+)
 
 // Navigating closes the drawer
-await dialog
-  .getByRole("link", { name: /Database/ })
-  .first()
-  .click()
-await page.waitForURL(/\/categories\//, { timeout: 10_000 })
+await dialog.locator('a[href="/data"]').click()
+await page.waitForURL("http://localhost:3000/data", { timeout: 10_000 })
 await page.waitForTimeout(300)
 check("drawer closed after navigation", (await page.locator('[role="dialog"]').count()) === 0)
 check(
@@ -89,12 +92,38 @@ check(
   (await page.evaluate(() => getComputedStyle(document.body).overflow)) !== "hidden",
 )
 
-// Reopen, dismiss with Escape
+// A section row closes the drawer and scrolls behind it: the hash must still
+// land, because the scroll waits for the lock to release.
 await page.getByRole("button", { name: "Open navigation" }).click()
-await page.waitForTimeout(300)
+await page.locator('[role="dialog"] a[href="#storage-files"]').click()
+await page.waitForTimeout(1200)
+check(
+  "section row closes the drawer and sets the hash",
+  (await page.locator('[role="dialog"]').count()) === 0 && page.url().endsWith("#storage-files"),
+  page.url(),
+)
+check(
+  "body scroll restored after section jump",
+  (await page.evaluate(() => getComputedStyle(document.body).overflow)) !== "hidden",
+)
+
+// Reopen, dismiss with Escape. The drawer now renders a whole family plus
+// glide measurements on open, so wait for it to settle instead of sleeping.
+await page.getByRole("button", { name: "Open navigation" }).click()
+await page.getByRole("button", { name: "Close navigation" }).waitFor({ timeout: 5000 })
 await page.keyboard.press("Escape")
-await page.waitForTimeout(200)
-check("escape closes drawer", (await page.locator('[role="dialog"]').count()) === 0)
+let escaped = false
+try {
+  await page.waitForFunction(
+    () => document.querySelectorAll('[role="dialog"]').length === 0,
+    null,
+    { timeout: 5000 },
+  )
+  escaped = true
+} catch {
+  escaped = false
+}
+check("escape closes drawer", escaped)
 check(
   "body scroll restored after escape",
   (await page.evaluate(() => getComputedStyle(document.body).overflow)) !== "hidden",
@@ -115,7 +144,7 @@ check("backdrop click closes drawer", (await page.locator('[role="dialog"]').cou
 
 // Desktop keeps the persistent rail, not the drawer
 await page.setViewportSize({ width: 1280, height: 900 })
-await page.goto("http://localhost:3000/explore", { waitUntil: "networkidle" })
+await page.goto("http://localhost:3000/", { waitUntil: "networkidle" })
 await page.waitForTimeout(200)
 check("rail visible on desktop", await page.locator("aside").isVisible())
 check(
@@ -125,7 +154,7 @@ check(
 
 // Mobile tool page must not overflow either
 await page.setViewportSize(MOBILE)
-for (const path of ["/free", "/categories"]) {
+for (const path of ["/free", "/ship"]) {
   await page.goto(`http://localhost:3000${path}`, { waitUntil: "networkidle" })
   await page.waitForTimeout(150)
   check(`no horizontal overflow on ${path}`, !(await hasHorizontalOverflow(page)))

@@ -1,10 +1,26 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+ * Dark is the default, and it is expressed the shadcn way: `.dark` on the root
+ * element. The inline script in the root layout adds the class before first
+ * paint, so there is no flash and no React provider needed for the initial value.
+ */
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /*
+   * House names. These are the tokens the product code reaches for. Every one of
+   * them resolves to a shadcn semantic token underneath, so a `bg-card` element
+   * and a `bg-surface` element are guaranteed to be the same colour rather than
+   * two greys that drifted apart.
+   */
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-field: var(--field);
   --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
   --color-line-strong: var(--line-strong);
 
   --color-ink: var(--ink);
@@ -12,127 +28,237 @@
   --color-ink-3: var(--ink-3);
   --color-ink-4: var(--ink-4);
 
-  --color-accent: var(--accent);
-  --color-accent-tint: var(--accent-tint);
-  --color-accent-ink: var(--accent-ink);
+  /*
+   * `--brand` is the single accent: burgundy in both themes, deep wine on
+   * light and a lightened rose on dark so links keep their contrast. Everything
+   * else stays neutral. `bg-accent` below is a hover fill, not a brand.
+   */
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-tint: var(--brand-tint);
+  --color-brand-solid: var(--brand-solid);
+
   --color-destructive: var(--destructive);
   --color-overlay: var(--overlay);
-  --color-veil: var(--veil);
-}
-
-:root {
-  --overlay: rgb(0 0 0 / 0.66);
-  --veil: rgb(255 255 255 / 0.07);
-
-  /* Glass edge, lit from the top left. See the glass-outline utility. */
-  --glass-line-a: rgb(255 255 255 / 0.24);
-  --glass-line-b: rgb(255 255 255 / 0.045);
-  --glass-fill-a: rgb(255 255 255 / 0.03);
-  --glass-fill-b: rgb(255 255 255 / 0.004);
-  --glass-sheen: rgb(255 255 255 / 0.08);
-  --glass-glow: rgb(255 255 255 / 0.028);
-
-  --page: #000000;
-  --surface: #0a0a0a;
-  --field: #141414;
-  --line: #242424;
-  --line-strong: #3d3d3d;
-
-  --ink: #ffffff;
-  --ink-2: #b8b8bd;
-  --ink-3: #8c8c93;
-  --ink-4: #6e6e75;
-
-  --accent: #2f9bff;
-  --accent-tint: #0a2136;
-  --accent-ink: #000000;
-  --destructive: #e5484d;
-
-  color-scheme: dark;
-}
-
-:root[data-theme="light"] {
-  --overlay: rgb(11 11 11 / 0.36);
-  --veil: rgb(9 9 11 / 0.055);
 
   /*
-   * Light mode inverts the glass, it does not reuse the dark values. A white
-   * edge on an off white page is invisible, so the ring is cut with the ink
-   * colour and the sheen is the only white left in it.
+   * shadcn semantics, mapped straight through. Kept so every component the CLI
+   * installs works without a translation layer.
    */
-  --glass-line-a: rgb(11 11 11 / 0.16);
-  --glass-line-b: rgb(11 11 11 / 0.045);
-  --glass-fill-a: rgb(11 11 11 / 0.02);
-  --glass-fill-b: rgb(11 11 11 / 0.004);
-  --glass-sheen: rgb(255 255 255 / 0.85);
-  --glass-glow: rgb(11 11 11 / 0.028);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
-  --page: #fbfbfa;
-  --surface: #ffffff;
-  --field: #eeeeec;
-  --line: #dededa;
-  --line-strong: #b9b9b3;
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
-  --ink: #0b0b0b;
-  --ink-2: #45453f;
-  --ink-3: #6b6b64;
-  --ink-4: #83837b;
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
-  --accent: #0b6bcb;
-  --accent-tint: #dceaf9;
-  --accent-ink: #ffffff;
-  --destructive: #c62f36;
+  --radius-chip: 6px;
+  --radius-control: 8px;
+  --radius-card: 12px;
 
-  color-scheme: light;
+  /*
+   * One family. The mono utility resolves to Geist as well, so every
+   * metadata treatment keeps its size and spacing while the page loads a
+   * single face. Tabular figures carry the numbers, not a second font.
+   */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme {
   /*
-   * Eight steps, and a deliberate gap between body and lead. A scale with no
-   * rung at 15px forces a jump from 13 to 19 for anything that needs to read
-   * as a subtitle, which is why so many screens here jumped straight to a
-   * title and lost their hierarchy.
+   * One scale, declared once. Values follow the reference index: 13px body,
+   * 15px lead, 10px for the mono metadata that annotates a row.
    */
-  --text-micro: 11px;
+  --text-micro: 10px;
+  --text-tiny: 11px;
   --text-small: 12px;
-  --text-body: 14px;
-  --text-lead: 16px;
-  --text-title: 20px;
-  --text-display: 30px;
-  --text-hero: 40px;
+  --text-body: 13px;
+  --text-lead: 15px;
+  --text-title: 18px;
+  --text-display: 28px;
+  --text-hero: 36px;
 
   --leading-tight: 1.15;
   --leading-snug: 1.3;
   --leading-normal: 1.5;
-  --leading-relaxed: 1.65;
+  --leading-relaxed: 1.6;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-ui: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/*
+ * Light values. `:root` is light so the stylesheet reads the way shadcn expects,
+ * and dark is applied by a class. The one behavioural consequence is that a
+ * browser with no JS and no class still renders a legible light page rather than
+ * an unstyled dark one.
+ */
+:root {
+  --radius: 0.5rem;
 
   /*
-   * Two shape systems, not one. Interactive chrome is a pill, because a control
-   * with a soft end reads as pressable. Content panels are soft rectangles,
-   * because a card is a container and should not look like a button.
+   * One burgundy accent over neutral surfaces, plus destructive red, which
+   * must keep reading as an error. Surfaces still separate by lightness —
+   * pale page, white cards — but links, counts, icons and solid fills carry
+   * the accent instead of bright ink. The primary action is the accent at
+   * full strength with white text.
    */
-  --radius-chip: 6px;
-  --radius-control: 8px;
-  --radius-pill: 999px;
-  --radius-card: 14px;
+  --page: #fafafa;
+  --surface: #ffffff;
+  --field: #f4f4f5;
+  --hover: #ececee;
 
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --line: #eaeaee;
+  --line-soft: #f4f4f6;
+  --line-strong: #d8d8de;
+
+  --ink: #09090b;
+  --ink-2: #3f3f46;
+  --ink-3: #63636b;
+  --ink-4: #76767e;
+
+  --brand: #8c1d40;
+  --brand-ink: #ffffff;
+  --brand-tint: #f1e8eb;
+  --brand-solid: #8c1d40;
+
+  --overlay: rgb(9 9 11 / 0.45);
+
+  --destructive: #dc2626;
+
+  --background: var(--page);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--brand-solid);
+  --primary-foreground: #ffffff;
+  --secondary: var(--field);
+  --secondary-foreground: var(--ink);
+  --muted: var(--field);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--hover);
+  --accent-foreground: var(--ink);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--brand);
+
+  --chart-1: oklch(0.35 0 0);
+  --chart-2: oklch(0.5 0 0);
+  --chart-3: oklch(0.65 0 0);
+  --chart-4: oklch(0.78 0 0);
+  --chart-5: oklch(0.9 0 0);
+
+  --sidebar: #f1f1f3;
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--brand-solid);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--hover);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--brand);
+
+  color-scheme: light;
+}
+
+.dark {
+  /*
+   * Near-black neutrals with the same accent lightened for the dark page:
+   * links go rose so they keep their contrast, and solid fills follow the
+   * usual inversion — bright rose fill with near-black text.
+   */
+  --page: #09090b;
+  --surface: #131315;
+  --field: #1c1c1f;
+  --hover: #232327;
+
+  --line: #1e1e22;
+  --line-soft: #151517;
+  --line-strong: #2e2e34;
+
+  --ink: #fafafa;
+  --ink-2: #b4b4ba;
+  --ink-3: #8e8e96;
+  --ink-4: #80808a;
+
+  --brand: #de7f9c;
+  --brand-ink: #09090b;
+  --brand-tint: #1e151a;
+  --brand-solid: #de7f9c;
+
+  --primary-foreground: #09090b;
+  --sidebar-primary-foreground: #09090b;
+
+  --overlay: rgb(0 0 0 / 0.66);
+
+  --destructive: #f87171;
+
+  --sidebar: #101012;
+
+  color-scheme: dark;
 }
 
 @layer base {
   html {
-    color-scheme: dark;
     scrollbar-gutter: stable;
-    /* Lenis drives scrolling, so the browser must not second guess it. */
     overscroll-behavior-y: none;
     scrollbar-width: thin;
-    scrollbar-color: var(--line) transparent;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+
+  /*
+   * Touch behaviour, decided once here rather than per component. Manipulation
+   * removes the double-tap zoom delay on controls, and the highlight is off
+   * because every pressable already answers with its own hover and press
+   * state.
+   */
+  button,
+  a {
+    touch-action: manipulation;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
   }
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--line) transparent;
+    scrollbar-color: var(--line-strong) transparent;
   }
 
   ::-webkit-scrollbar {
@@ -157,44 +283,38 @@
   }
 
   body {
-    background-color: var(--color-page);
-    color: var(--color-ink);
+    background-color: var(--page);
+    color: var(--ink);
     font-family: var(--font-sans);
     font-size: var(--text-body);
-    font-weight: 500;
+    font-weight: 450;
     line-height: var(--leading-normal);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    background-color: var(--color-accent-tint);
-    color: var(--color-ink);
+    background-color: var(--brand-tint);
+    color: var(--ink);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
-  /*
-   * Headings get the display face, semibold, and tightened tracking. Body gets
-   * neither. Applying tracking-tight to running text is what makes a page feel
-   * cramped, and it belongs only on large type where it corrects the loose
-   * default sidebearing.
-   */
   h1,
   h2,
   h3 {
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.014em;
+    letter-spacing: -0.018em;
     text-wrap: balance;
   }
 
   /*
    * Numbers keep a fixed width so a count that changes does not shift the row it
-   * sits in. That was the only real reason for a second font family.
+   * sits in.
    */
   [data-numeric],
   .numeric {
@@ -202,264 +322,168 @@
   }
 }
 
-@utility kbd {
-  display: inline-flex;
-  height: 20px;
-  min-width: 20px;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-chip);
-  background-color: color-mix(in srgb, var(--color-ink) 7%, transparent);
-  padding-inline: 5px;
-  font-family: var(--font-sans);
-  font-size: var(--text-small);
-  line-height: 1;
-  color: var(--color-ink-3);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 10%, transparent);
-  user-select: none;
-}
-
-/**
- * A hover fill that fades instead of snapping.
- *
- * Two things went wrong here first and both are worth recording.
- *
- * A background colour on a row reads as a hard block, a "barrier", because the
- * fill has a crisp edge and lands in one frame. So the fill is a pseudo
- * element whose opacity is transitioned, which is also interruptible part way
- * through.
- *
- * The fill must not be built with color-mix against `transparent`. In oklab,
- * mixing with transparent premultiplies and shifts the hue, which turned a
- * neutral grey into a brown tint on hover. The veil is a plain per theme rgb
- * value instead, and it is a radial fade with no hard edge on any side.
- */
-@utility hover-veil {
-  position: relative;
-  isolation: isolate;
-}
-
-@utility hover-veil-fill {
-  &::before {
-    position: absolute;
-    inset: -1px;
-    z-index: -1;
-    content: "";
-    background-image: radial-gradient(135% 200% at 0% 50%, var(--color-veil) 0%, transparent 72%);
-    border-radius: inherit;
-    opacity: 0;
-    transition-property: opacity;
-    transition-duration: 220ms;
-    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-  }
-}
-
-@utility hover-veil-active {
-  &::before {
-    opacity: 1;
-  }
-}
-
 /*
- * One easing curve for the whole product.
- *
- * Interaction states were using three different curves, which is why motion
- * felt inconsistent even where each animation was individually smooth. This is
- * a decelerating curve, so something arriving settles rather than stopping dead.
+ * Mono metadata. Counts, eyebrows and anything annotating a row, in the mono
+ * face at 10px, uppercase and letter-spaced. This is the labelling voice of the
+ * product: quiet, technical, and unmistakably not body copy.
  */
-@utility ease-ui {
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/*
- * A glass edge, and the one exception to the single easing curve.
- *
- * The ring is a gradient clipped to a 1px border by masking the content box
- * away, which is the only way to get a gradient border that keeps a real
- * gradient behind it. A flat `border-line-strong` was tried first and read as a
- * form field outline rather than as a lit surface.
- *
- * The ::before carries the pane itself: a faint fill, a one pixel highlight
- * along the top edge where the light would catch, and a halo so the pane sits
- * above the rail instead of being cut into it. There is no `backdrop-filter`
- * because the rail behind it is a flat fill, so blurring it would cost a
- * compositing layer and change nothing that a screenshot could see.
- *
- * The curve overshoots slightly. This is the one marker in the product that
- * travels between two positions, and a decelerate-only curve made a long
- * journey read as a slow drag. The settle is what makes it read as a glide.
- */
-@utility glass-outline {
-  padding: 1px;
-  background-image: linear-gradient(
-    150deg,
-    var(--glass-line-a),
-    var(--glass-line-b) 42%,
-    var(--glass-line-a)
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-
-  &::before {
-    position: absolute;
-    inset: 1px;
-    content: "";
-    border-radius: inherit;
-    background-image: linear-gradient(155deg, var(--glass-fill-a), var(--glass-fill-b) 60%);
-    box-shadow:
-      inset 0 1px 0 var(--glass-sheen),
-      0 0 0 1px var(--glass-glow);
-  }
-}
-
-@utility ease-glide {
-  transition-timing-function: cubic-bezier(0.32, 1.2, 0.36, 1);
-}
-
-@utility pressable {
-  transition-property: scale;
-  transition-duration: 140ms;
-  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
-}
-
-@utility pressable-active {
-  scale: 0.96;
-}
-
 @utility label {
+  font-family: var(--font-mono);
   font-size: var(--text-small);
   font-weight: 500;
-  color: var(--ink-3);
 }
 
 @utility numeric {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+  font-size: var(--text-micro);
+  letter-spacing: 0.02em;
 }
 
-@utility preview-enter {
-  animation: preview-in 170ms cubic-bezier(0.16, 1, 0.3, 1) both;
+@utility kbd {
+  display: inline-flex;
+  height: 18px;
+  min-width: 18px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-chip);
+  background-color: var(--field);
+  padding-inline: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: 1;
+  color: var(--ink-3);
+  box-shadow: inset 0 0 0 1px var(--line);
+  user-select: none;
 }
 
-@utility preview-image {
-  animation: preview-image-in 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@utility palette-overlay {
-  animation: palette-fade 180ms cubic-bezier(0.2, 0, 0, 1) both;
-}
-
-@utility palette-dialog {
-  animation: palette-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
-}
-
-/**
- * The rail settles in once on first paint. One orchestrated moment reads as
- * considered; an animation on every row would read as noise.
+/*
+ * One easing curve for interaction states. Something arriving settles rather
+ * than stopping dead.
  */
-@utility rail-body {
-  animation: rail-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+@utility ease-ui {
+  transition-timing-function: var(--ease-out-ui);
 }
 
-@keyframes rail-in {
+/*
+ * Entrance. A short fade and rise with a blur, staggered through a `--d` delay so
+ * a list arrives as a sequence instead of a single block. GSAP drives the same
+ * timings for anything that needs scroll-triggered reveals; this covers the
+ * server-rendered first paint, where there is no JS yet.
+ */
+@keyframes rise {
   from {
     opacity: 0;
-    transform: translateX(-6px);
+    filter: blur(3px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    filter: blur(0);
+    transform: none;
   }
 }
 
-@utility drawer-backdrop {
-  animation: palette-fade 180ms cubic-bezier(0.2, 0, 0, 1) both;
+@utility rise {
+  animation: rise 0.5s var(--ease-out-ui) both;
+  animation-delay: var(--d, 0ms);
 }
 
-@utility drawer-panel {
-  animation: drawer-in 260ms cubic-bezier(0.2, 0, 0, 1) both;
+@utility rise-row {
+  animation: rise 0.34s var(--ease-out-ui) both;
+  animation-delay: var(--d, 0ms);
 }
 
-@utility cursor-blink {
-  animation: cursor-blink 1.15s steps(1) infinite;
+/*
+ * A section rule. Dashed because a solid hairline between two blocks of equal
+ * weight reads as a table cell, and this list is not a table.
+ */
+@utility rule {
+  border-top: 1px dashed var(--line);
 }
 
-@keyframes cursor-blink {
-  50% {
-    opacity: 0;
-  }
+/*
+ * The left panels — the desktop rail and the mobile drawer — are glass on the
+ * page colour, not a painted strip: same background as the page, a sheen from
+ * the top edge, three inset rims, a soft wash along the inner edge, and a
+ * hairline that is brightest at the top and fades as it runs down. One class so
+ * the two panels cannot drift apart. The rims swap with the theme rather than
+ * transitioning, so the flip stays instant (see .theme-swap). Deliberately
+ * unlayered: it has to win over the sheet's own drop shadow.
+ */
+.glass-edge {
+  box-shadow:
+    inset 0 1px 0 rgb(0 0 0 / 0.07),
+    inset -1px 0 0 rgb(0 0 0 / 0.1),
+    inset 1px 0 0 rgb(0 0 0 / 0.05),
+    inset -14px 0 22px -16px rgb(0 0 0 / 0.05),
+    2px 0 12px -8px rgb(0 0 0 / 0.35);
 }
 
-@keyframes drawer-in {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+.glass-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.04), rgb(0 0 0 / 0) 55%);
 }
 
-@keyframes palette-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.glass-edge::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  width: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.25),
+    rgb(0 0 0 / 0.08) 38%,
+    rgb(0 0 0 / 0) 82%
+  );
 }
 
-@keyframes palette-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.975);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.dark .glass-edge {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    inset -1px 0 0 rgb(255 255 255 / 0.24),
+    inset 1px 0 0 rgb(255 255 255 / 0.08),
+    inset -14px 0 22px -16px rgb(255 255 255 / 0.1),
+    2px 0 12px -8px rgb(0 0 0 / 0.55);
 }
 
-@keyframes preview-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.dark .glass-edge::before {
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0) 55%);
 }
 
-@keyframes preview-image-in {
-  from {
-    opacity: 0;
-    transform: scale(0.94);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.dark .glass-edge::after {
+  background: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0.55),
+    rgb(255 255 255 / 0.18) 35%,
+    rgb(255 255 255 / 0) 80%
+  );
 }
 
-[data-icon="moon"] {
-  display: block;
+/*
+ * The theme flip swaps every colour token in one moment. Left alone, each
+ * element with its own colour transition would interpolate from the old
+ * palette to the new one and the page visibly melts for a beat instead of
+ * switching. The toggle lifts this class onto the root for two frames around
+ * the swap: transitions off across the whole tree, except the toggle's own
+ * sun and moon, which keep their cross-fade because that motion is the point
+ * of the control. Added and removed in the same task as the class flip, so
+ * no transition ever starts.
+ */
+.theme-swap *,
+.theme-swap *::before,
+.theme-swap *::after {
+  transition-property: none !important;
 }
 
-[data-icon="sun"] {
-  display: none;
-}
-
-:root[data-theme="light"] [data-icon="moon"] {
-  display: none;
-}
-
-:root[data-theme="light"] [data-icon="sun"] {
-  display: block;
+.theme-swap [data-theme-glyph] {
+  transition-property: opacity, transform !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -467,6 +491,8 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

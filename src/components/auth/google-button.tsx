@@ -3,6 +3,10 @@
 import { useState } from "react"
 import { authClient } from "@/lib/auth/client"
 import { AUTH_ERRORS } from "@/lib/auth/errors"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Spinner } from "@/components/ui/spinner"
+import { AlertIcon } from "@/components/icons"
 
 const GoogleMark = () => (
   <svg aria-hidden viewBox="0 0 18 18" className="size-4 shrink-0">
@@ -31,9 +35,11 @@ export const GoogleButton = () => {
   const [error, setError] = useState<string | null>(null)
 
   return (
-    <>
-      <button
+    <div className="space-y-3">
+      <Button
         type="button"
+        variant="outline"
+        size="lg"
         disabled={isPending}
         onClick={async () => {
           setError(null)
@@ -47,19 +53,19 @@ export const GoogleButton = () => {
             setIsPending(false)
           }
         }}
-        className="group flex w-full items-center justify-center gap-2.5 border border-line bg-field px-4 py-2.5 text-body text-ink transition-[background-color,border-color,transform] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:border-line-strong hover:bg-field/60 active:scale-[0.98] disabled:opacity-60"
+        className="w-full"
       >
-        <GoogleMark />
-        <span className="transition-opacity duration-150 group-hover:opacity-80">
-          {isPending ? "Opening Google" : "Continue with Google"}
-        </span>
-      </button>
+        {isPending ? <Spinner data-icon="inline-start" /> : <GoogleMark />}
+        {isPending ? "Opening Google…" : "Continue with Google"}
+      </Button>
 
       {error ? (
-        <p role="alert" className="border-l-2 border-destructive bg-field px-3 py-2 text-small">
-          {error}
-        </p>
+        <Alert variant="destructive">
+          <AlertIcon />
+          <AlertTitle>Sign In Failed</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : null}
-    </>
+    </div>
   )
 }

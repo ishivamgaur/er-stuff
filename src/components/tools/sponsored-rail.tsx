@@ -1,5 +1,9 @@
+import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
 import { ToolLogo } from "@/components/tools/tool-logo"
 import { PricingBadge } from "@/components/tools/pricing-badge"
+import { ExternalIcon } from "@/components/icons"
 import type { PlainTool } from "@/lib/db/plain-tool"
 
 type SponsoredRailProps = {
@@ -17,54 +21,58 @@ export const SponsoredRail = ({ tools }: SponsoredRailProps) => {
   if (tools.length === 0) return null
 
   return (
-    <section aria-labelledby="sponsored-heading" className="mb-2 border border-line bg-field">
-      <div className="flex items-baseline justify-between gap-3 border-b border-line px-4 py-2.5">
-        <h2
-          id="sponsored-heading"
-          className="text-micro font-bold tracking-[0.12em] text-ink-3 uppercase"
-        >
+    <section aria-labelledby="sponsored-heading" className="rise mb-6">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 id="sponsored-heading" className="label text-ink-4">
           Sponsored
         </h2>
-        <a
+        <Link
           href="/sponsors"
-          className="text-micro text-ink-4 underline decoration-transparent decoration-from-font underline-offset-[0.3em] transition-colors hover:text-ink-2 hover:decoration-current"
+          className="text-small text-ink-3 underline decoration-transparent underline-offset-4 transition-colors hover:text-brand hover:decoration-current"
         >
-          How this works
-        </a>
+          How This Works
+        </Link>
       </div>
 
-      <ul>
-        {tools.map((tool, index) => (
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {tools.map((tool) => (
           <li
             key={tool._id}
-            className={
-              index === tools.length - 1 ? "px-4 py-3.5" : "border-b border-line px-4 py-3.5"
-            }
+            className="group flex items-start gap-3 rounded-card border border-brand/25 bg-brand-tint/40 p-4 transition-[transform,border-color,box-shadow] duration-200 ease-ui hover:scale-[1.02] hover:border-brand/50 hover:shadow-lg active:scale-[0.99]"
           >
-            <div className="flex items-start gap-3 sm:items-center">
-              <ToolLogo name={tool.name} slug={tool.slug} logoUrl={tool.logoUrl} />
+            <ToolLogo name={tool.name} slug={tool.slug} logoUrl={tool.logoUrl} className="mt-0.5" />
 
-              <div className="flex min-w-0 flex-1 flex-col">
-                <div className="flex min-w-0 items-baseline gap-2">
-                  <a
-                    href={`/tools/${tool.slug}`}
-                    className="truncate text-body font-bold text-ink underline decoration-transparent decoration-from-font underline-offset-[0.3em] hover:decoration-current"
-                  >
-                    {tool.name}
-                  </a>
-                  <PricingBadge type={tool.pricing.type} />
-                </div>
-                <p className="text-small leading-snug text-pretty text-ink-3">{tool.description}</p>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <div className="flex min-w-0 items-center gap-2">
+                <Link
+                  href={`/tools/${tool.slug}`}
+                  className="truncate text-body font-semibold text-ink group-hover:text-brand"
+                >
+                  {tool.name}
+                </Link>
+                <PricingBadge type={tool.pricing.type} />
               </div>
-
-              <a
-                href={tool.websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer sponsored nofollow"
-                className="shrink-0 text-small whitespace-nowrap text-accent underline decoration-transparent decoration-from-font underline-offset-[0.3em] hover:decoration-current"
-              >
-                Visit site
-              </a>
+              <p className="mt-0.5 line-clamp-2 text-small leading-snug text-ink-2">
+                {tool.description}
+              </p>
+              <div className="mt-2.5 flex items-center gap-2">
+                <Badge variant="outline" className="font-mono font-normal">
+                  sponsored
+                </Badge>
+                <a
+                  href={tool.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored nofollow"
+                  className={buttonVariants({
+                    variant: "link",
+                    size: "sm",
+                    className: "h-auto gap-1 p-0",
+                  })}
+                >
+                  Visit Site
+                  <ExternalIcon data-icon="inline-end" />
+                </a>
+              </div>
             </div>
           </li>
         ))}

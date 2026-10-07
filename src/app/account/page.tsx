@@ -3,6 +3,10 @@ import Link from "next/link"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import { requireUser, isAdmin } from "@/lib/auth/session"
 import { DetailList } from "@/components/tools/detail-panel"
+import { PageHeader } from "@/components/layout/page-header"
+import { buttonVariants } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { PlusIcon } from "@/components/icons"
 import { countSubmissionsByStatus, findSubmissionsForAccount } from "@/lib/db/submissions"
 
 export const metadata: Metadata = {
@@ -16,13 +20,13 @@ export default async function AccountPage() {
     findSubmissionsForAccount(user.id),
     isAdmin(user) ? countSubmissionsByStatus() : Promise.resolve(null),
   ])
+  const pending = submissions.filter((s) => s.status === "pending").length
 
   return (
     <div className="max-w-[62ch]">
-      <h1 className="text-title font-bold tracking-tight text-ink">account</h1>
+      <PageHeader eyebrow="Account" title="Your Account" />
 
       <DetailList
-        className="mt-5"
         rows={[
           { label: "email", value: user.email },
           {
@@ -30,29 +34,20 @@ export default async function AccountPage() {
             value: user.displayName ?? user.name ?? "not set",
           },
           { label: "role", value: user.role ?? "not set" },
-          {
-            label: "pending",
-            value: String(submissions.filter((s) => s.status === "pending").length),
-          },
+          { label: "pending", value: String(pending) },
         ]}
       />
 
-      <hr className="my-7" />
-
-      <div className="space-y-2">
-        <Link
-          href="/submit"
-          className="block text-body text-accent underline decoration-transparent decoration-from-font underline-offset-[0.3em] hover:decoration-current"
-        >
-          [+] List another product
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <Link href="/submit" className={buttonVariants()}>
+          <PlusIcon data-icon="inline-start" />
+          List Another Product
         </Link>
 
         {isAdmin(user) ? (
-          <Link
-            href="/admin/reviews"
-            className="block text-body text-accent underline decoration-transparent decoration-from-font underline-offset-[0.3em] hover:decoration-current"
-          >
-            [+] Review queue ({counts?.pending ?? 0} pending)
+          <Link href="/admin/reviews" className={buttonVariants({ variant: "outline" })}>
+            Review Queue
+            <Badge className="ml-1 rounded-chip">{counts?.pending ?? 0} pending</Badge>
           </Link>
         ) : null}
 

@@ -16,7 +16,7 @@ const collect = (dir: string): string[] =>
  * outside it is the single biggest reason a UI reads as assembled rather than
  * designed, and it is invisible in a screenshot, so it needs a check.
  */
-const SCALE = ["micro", "small", "body", "lead", "title", "display", "hero"] as const
+const SCALE = ["micro", "tiny", "small", "body", "lead", "title", "display", "hero"] as const
 
 describe("type scale", () => {
   const files = collect(ROOT)

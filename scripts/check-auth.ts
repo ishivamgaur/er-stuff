@@ -45,7 +45,7 @@ const browser: Browser = await chromium.launch()
   await page.goto(`${BASE}/signin`, { waitUntil: "networkidle" })
   const text = await page.locator("main").innerText()
   const hasGoogleButton = (await page.getByRole("button", { name: /Google/i }).count()) > 0
-  const explains = text.includes("not switched on") || hasGoogleButton
+  const explains = /not switched on/i.test(text) || hasGoogleButton
   check(
     "sign in either works or explains why it does not",
     explains,
@@ -78,7 +78,7 @@ const browser: Browser = await chromium.launch()
 // What matters is that the protected content never reaches the browser.
 {
   const markers: Array<[string, string]> = [
-    ["/submit", "New submission"],
+    ["/submit", "New Submission"],
     ["/account", "signed in as"],
     ["/admin/reviews", "pending"],
   ]

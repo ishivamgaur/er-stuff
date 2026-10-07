@@ -1,23 +1,39 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils/cn"
 import { CATEGORIES } from "@/config/categories"
 import { submitToolAction } from "@/app/submit/actions"
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+  FieldLegend,
+} from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Spinner } from "@/components/ui/spinner"
+import { AlertIcon } from "@/components/icons"
 
 const PRICING_OPTIONS = [
-  { value: "free", label: "free" },
-  { value: "freemium", label: "freemium" },
-  { value: "paid", label: "paid" },
-  { value: "open_source", label: "open source" },
-  { value: "unknown", label: "not sure" },
+  { value: "free", label: "Free" },
+  { value: "freemium", label: "Freemium" },
+  { value: "paid", label: "Paid" },
+  { value: "open_source", label: "Open source" },
+  { value: "unknown", label: "Not sure" },
 ] as const
 
 export const SubmitForm = () => {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
+  const errorRef = useRef<HTMLDivElement>(null)
 
   return (
     <form
@@ -28,144 +44,115 @@ export const SubmitForm = () => {
         if (result.error) {
           setError(result.error)
           setIsPending(false)
+          errorRef.current?.focus()
           return
         }
         router.refresh()
       }}
-      className="mt-4 space-y-5"
+      className="mt-5"
     >
-      <label className="block">
-        <span className="mb-1.5 block text-small text-ink-2">
-          <span aria-hidden className="text-ink-4">
-            #
-          </span>{" "}
-          Product name
-        </span>
-        <input
-          name="name"
-          required
-          maxLength={80}
-          className="w-full border border-line bg-field px-3 py-2 text-body text-ink outline-none transition-colors focus:border-accent"
-        />
-      </label>
+      <FieldGroup>
+        <Field>
+          <FieldLabel htmlFor="submit-name">Product Name</FieldLabel>
+          <Input id="submit-name" name="name" required maxLength={80} autoComplete="off" />
+        </Field>
 
-      <label className="block">
-        <span className="mb-1.5 block text-small text-ink-2">
-          <span aria-hidden className="text-ink-4">
-            #
-          </span>{" "}
-          Website
-        </span>
-        <input
-          name="websiteUrl"
-          type="url"
-          required
-          placeholder="https://"
-          className="w-full border border-line bg-field px-3 py-2 text-body text-ink outline-none transition-colors placeholder:text-ink-4 focus:border-accent"
-        />
-      </label>
+        <Field>
+          <FieldLabel htmlFor="submit-website">Website</FieldLabel>
+          <Input
+            id="submit-website"
+            name="websiteUrl"
+            type="url"
+            required
+            placeholder="https://"
+            autoComplete="url"
+            spellCheck={false}
+          />
+        </Field>
 
-      <label className="block">
-        <span className="mb-1.5 block text-small text-ink-2">
-          <span aria-hidden className="text-ink-4">
-            #
-          </span>{" "}
-          Description
-        </span>
-        <textarea
-          name="description"
-          required
-          minLength={30}
-          maxLength={400}
-          rows={4}
-          className="w-full resize-y border border-line bg-field px-3 py-2 text-body leading-relaxed text-ink outline-none transition-colors focus:border-accent"
-        />
-        <span className="mt-1 block text-micro text-ink-3">
-          One or two sentences. Plain, factual, no marketing adjectives.
-        </span>
-      </label>
+        <Field>
+          <FieldLabel htmlFor="submit-description">Description</FieldLabel>
+          <Textarea
+            id="submit-description"
+            name="description"
+            required
+            minLength={30}
+            maxLength={400}
+            rows={4}
+          />
+          <FieldDescription>
+            One or two sentences. Plain, factual, no marketing adjectives.
+          </FieldDescription>
+        </Field>
 
-      <fieldset>
-        <legend className="mb-1.5 text-small text-ink-2">
-          <span aria-hidden className="text-ink-4">
-            #
-          </span>{" "}
-          Categories
-        </legend>
-        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-          {CATEGORIES.map((category) => (
-            <label key={category.slug} className="flex items-center gap-1.5 text-small text-ink-2">
-              <input
-                type="checkbox"
-                name="categorySlugs"
-                value={category.slug}
-                className="size-3 accent-[var(--accent)]"
-              />
-              {category.name}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+        <FieldSet>
+          <FieldLegend>Categories</FieldLegend>
+          <div className="grid gap-1 sm:grid-cols-2">
+            {CATEGORIES.map((category) => (
+              <Field key={category.slug} orientation="horizontal">
+                <Checkbox
+                  id={`submit-category-${category.slug}`}
+                  name="categorySlugs"
+                  value={category.slug}
+                />
+                <FieldLabel htmlFor={`submit-category-${category.slug}`} className="font-normal">
+                  {category.name}
+                </FieldLabel>
+              </Field>
+            ))}
+          </div>
+        </FieldSet>
 
-      <fieldset>
-        <legend className="mb-1.5 text-small text-ink-2">
-          <span aria-hidden className="text-ink-4">
-            #
-          </span>{" "}
-          Pricing
-        </legend>
-        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-          {PRICING_OPTIONS.map((option) => (
-            <label key={option.value} className="flex items-center gap-1.5 text-small text-ink-2">
-              <input
-                type="radio"
-                name="pricing"
-                value={option.value}
-                defaultChecked={option.value === "unknown"}
-                className="size-3 accent-[var(--accent)]"
-              />
-              {option.label}
-            </label>
-          ))}
-        </div>
-        <span className="mt-1 block text-micro text-ink-3">
-          If you are not sure, say so. An honest unknown beats a wrong answer.
-        </span>
-      </fieldset>
+        <FieldSet>
+          <FieldLegend>Pricing</FieldLegend>
+          <RadioGroup
+            name="pricing"
+            defaultValue="unknown"
+            className="flex flex-wrap gap-x-5 gap-y-1"
+          >
+            {PRICING_OPTIONS.map((option) => (
+              <Field key={option.value} orientation="horizontal">
+                <RadioGroupItem id={`submit-pricing-${option.value}`} value={option.value} />
+                <FieldLabel htmlFor={`submit-pricing-${option.value}`} className="font-normal">
+                  {option.label}
+                </FieldLabel>
+              </Field>
+            ))}
+          </RadioGroup>
+          <FieldDescription>
+            If you are not sure, say so. An honest unknown beats a wrong answer.
+          </FieldDescription>
+        </FieldSet>
 
-      <label className="block">
-        <span className="mb-1.5 block text-small text-ink-2">
-          <span aria-hidden className="text-ink-4">
-            #
-          </span>{" "}
-          Tags
-        </span>
-        <input
-          name="tags"
-          placeholder="comma, separated, tags"
-          className="w-full border border-line bg-field px-3 py-2 text-body text-ink outline-none transition-colors placeholder:text-ink-4 focus:border-accent"
-        />
-      </label>
+        <Field>
+          <FieldLabel htmlFor="submit-tags">
+            Tags <span className="font-normal text-ink-4">(optional)</span>
+          </FieldLabel>
+          <Input
+            id="submit-tags"
+            name="tags"
+            placeholder="comma, separated, tags…"
+            required={false}
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </Field>
 
-      {error ? (
-        <p role="alert" className="border-l-2 border-destructive bg-field px-3 py-2 text-small">
-          <span aria-hidden className="mr-1.5 text-destructive">
-            !
-          </span>
-          {error}
-        </p>
-      ) : null}
+        {error ? (
+          <Alert ref={errorRef} tabIndex={-1} variant="destructive">
+            <AlertIcon />
+            <AlertTitle>Could Not Send</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : null}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className={cn(
-          "bg-accent px-4 py-2.5 text-body font-bold text-accent-ink transition-opacity",
-          isPending ? "opacity-60" : "hover:opacity-90",
-        )}
-      >
-        {isPending ? "Sending" : "Send for review"}
-      </button>
+        <Field orientation="horizontal">
+          <Button type="submit" disabled={isPending}>
+            {isPending && <Spinner data-icon="inline-start" />}
+            {isPending ? "Sending…" : "Send for Review"}
+          </Button>
+        </Field>
+      </FieldGroup>
     </form>
   )
 }

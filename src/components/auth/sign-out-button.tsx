@@ -4,17 +4,20 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { authClient } from "@/lib/auth/client"
 import { SignOutIcon } from "@/components/icons"
-import { cn } from "@/lib/utils/cn"
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { cn } from "@/lib/utils"
 
 export const SignOutButton = ({ collapsed = false }: { collapsed?: boolean }) => {
   const router = useRouter()
   const [isPending, setIsPending] = useState(false)
 
   return (
-    <button
+    <Button
       type="button"
-      title={collapsed ? "Sign out" : undefined}
-      aria-label={collapsed ? "Sign out" : undefined}
+      variant="ghost"
+      title={collapsed ? "Sign Out" : undefined}
+      aria-label={collapsed ? "Sign Out" : undefined}
       disabled={isPending}
       onClick={async () => {
         setIsPending(true)
@@ -23,12 +26,12 @@ export const SignOutButton = ({ collapsed = false }: { collapsed?: boolean }) =>
         router.refresh()
       }}
       className={cn(
-        "flex min-h-9 w-full items-center gap-2.5 rounded-chip px-1.5 text-small text-ink-3 transition-colors duration-150 hover:bg-field hover:text-ink disabled:opacity-50",
+        "h-6 w-full justify-start gap-1.5 px-2 text-small font-normal text-ink-3 hover:text-ink",
         collapsed && "justify-center px-0",
       )}
     >
-      <SignOutIcon />
-      {!collapsed ? "Sign out" : null}
-    </button>
+      {isPending ? <Spinner data-icon="inline-start" /> : <SignOutIcon />}
+      {!collapsed ? "Sign Out" : null}
+    </Button>
   )
 }

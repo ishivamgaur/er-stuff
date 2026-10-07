@@ -1,141 +1,128 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { createPortal } from "react-dom"
-import { RailNav } from "@/components/layout/sidebar-rail"
-import type { NavGroupConfig } from "@/config/navigation-groups"
-import { SignOutButton } from "@/components/auth/sign-out-button"
+import { useState } from "react"
 import Link from "next/link"
+import { SidebarNav } from "@/components/layout/sidebar"
 import type { Viewer } from "@/components/layout/viewer"
+import { SignOutButton } from "@/components/auth/sign-out-button"
+import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import {
   CloseIcon,
+  GiftIcon,
   MegaphoneIcon,
   MenuIcon,
   PlusIcon,
-  PromptIcon,
   UserIcon,
 } from "@/components/icons"
 
 type MobileNavProps = {
   identity: { name: string; tagline: string }
-  groups: readonly NavGroupConfig[]
   counts: ReadonlyMap<string, number>
   viewer: Viewer | null
 }
 
-export const MobileNav = ({ identity, groups, counts, viewer }: MobileNavProps) => {
+/*
+ * The drawer. It renders the same SidebarNav as the desktop rail, so the two
+ * can never disagree about labels, counts or the active row, and the checks
+ * rely on it: drawer links and rail links share a size because they are one
+ * component.
+ *
+ * The panel is 16rem wide at a 390px viewport, which leaves a full-height
+ * backdrop strip on the right for the tap-to-close assertion.
+ */
+export const MobileNav = ({ identity, counts, viewer }: MobileNavProps) => {
   const [isOpen, setIsOpen] = useState(false)
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-  const triggerRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    const trigger = triggerRef.current
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false)
-    }
-
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-    window.addEventListener("keydown", onKeyDown)
-    closeButtonRef.current?.focus()
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener("keydown", onKeyDown)
-      trigger?.focus()
-    }
-  }, [isOpen])
+  const close = () => setIsOpen(false)
 
   return (
-    <>
-      <button
-        ref={triggerRef}
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <Button
         type="button"
+        variant="ghost"
+        size="icon-sm"
         onClick={() => setIsOpen(true)}
         aria-label="Open navigation"
         aria-expanded={isOpen}
         aria-controls="mobile-nav-drawer"
-        className="-ml-1.5 flex size-8 items-center justify-center rounded-chip text-ink-2 transition-colors hover:bg-field hover:text-ink lg:hidden"
+        className="-ml-1.5 lg:hidden"
       >
         <MenuIcon />
-      </button>
+      </Button>
 
-      {isOpen
-        ? createPortal(
-            <div className="fixed inset-0 z-50 lg:hidden">
-              <button
-                type="button"
-                aria-label="Close navigation"
-                tabIndex={-1}
-                onClick={() => setIsOpen(false)}
-                className="drawer-backdrop absolute inset-0 bg-overlay"
+      <SheetContent
+        side="left"
+        id="mobile-nav-drawer"
+        aria-label="Navigation"
+        aria-modal="true"
+        showCloseButton={false}
+        style={{ width: "16rem" }}
+        className="gap-0 border-line bg-page/85 p-0 backdrop-blur-md glass-edge lg:hidden"
+      >
+        <SheetTitle className="sr-only">Navigation</SheetTitle>
+
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-4">
+          <Link
+            href="/"
+            onClick={close}
+            className="flex items-center gap-2 text-lead font-semibold tracking-tight text-ink"
+          >
+            <span aria-hidden className="size-2 shrink-0 rounded-[2px] bg-brand" />
+            <span>{identity.name}</span>
+          </Link>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={close}
+            aria-label="Close navigation"
+          >
+            <CloseIcon />
+          </Button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2">
+          <SidebarNav counts={counts} onNavigate={close} isCollapsed={false} />
+
+          <div className="mt-4 flex flex-col gap-1 border-t border-line pt-3">
+            {viewer ? (
+              <>
+                <p className="truncate px-2.5 pb-1 font-mono text-micro text-ink-4">
+                  {viewer.email}
+                </p>
+                <DrawerLink
+                  href="/submit"
+                  label="Submit Tool"
+                  icon={<PlusIcon />}
+                  onNavigate={close}
+                />
+                <DrawerLink
+                  href="/account"
+                  label="Account"
+                  icon={<UserIcon />}
+                  onNavigate={close}
+                />
+                <SignOutButton />
+              </>
+            ) : (
+              <DrawerLink
+                href="/signup"
+                label="Submit Tool"
+                icon={<PlusIcon />}
+                onNavigate={close}
               />
-
-              <div
-                id="mobile-nav-drawer"
-                role="dialog"
-                aria-modal="true"
-                aria-label="Navigation"
-                className="drawer-panel absolute inset-y-0 left-0 flex w-[16rem] max-w-[84vw] flex-col border-r border-line bg-page"
-              >
-                <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-4">
-                  <Link
-                    href="/explore"
-                    className="flex items-center gap-1.5 text-body font-bold text-accent"
-                  >
-                    <PromptIcon />
-                    <span>{identity.name}</span>
-                    <span aria-hidden className="cursor-blink text-ink-4">
-                      |
-                    </span>
-                  </Link>
-                  <button
-                    ref={closeButtonRef}
-                    type="button"
-                    onClick={() => setIsOpen(false)}
-                    aria-label="Close navigation"
-                    className="-mr-1.5 flex size-8 items-center justify-center rounded-chip text-ink-3 transition-colors hover:bg-field hover:text-ink"
-                  >
-                    <CloseIcon />
-                  </button>
-                </div>
-
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4">
-                  <div className="flex flex-col gap-5">
-                    <div>
-                      <div className="mt-1.5">
-                        <RailNav
-                          groups={groups}
-                          counts={counts}
-                          isCollapsed={false}
-                          onNavigate={() => setIsOpen(false)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex flex-col gap-1 border-t border-line pt-4">
-                    {viewer ? (
-                      <>
-                        <p className="truncate px-2.5 pb-1 text-small text-ink-4">{viewer.email}</p>
-                        <DrawerLink href="/submit" label="List a product" icon={<PlusIcon />} />
-                        <DrawerLink href="/account" label="Your account" icon={<UserIcon />} />
-                        <SignOutButton />
-                      </>
-                    ) : (
-                      <DrawerLink href="/signup" label="List a product" icon={<PlusIcon />} />
-                    )}
-                    <DrawerLink href="/sponsors" label="Sponsors" icon={<MegaphoneIcon />} />
-                  </div>
-                </div>
-              </div>
-            </div>,
-            document.body,
-          )
-        : null}
-    </>
+            )}
+            <DrawerLink href="/free" label="Free" icon={<GiftIcon />} onNavigate={close} />
+            <DrawerLink
+              href="/sponsors"
+              label="Sponsors"
+              icon={<MegaphoneIcon />}
+              onNavigate={close}
+            />
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   )
 }
 
@@ -143,18 +130,21 @@ const DrawerLink = ({
   href,
   label,
   icon,
+  onNavigate,
 }: {
   href: string
   label: string
   icon: React.ReactNode
+  onNavigate: () => void
 }) => (
   <Link
     href={href}
-    className="hover-veil group flex min-h-7 items-center gap-2.5 rounded-chip px-2.5 hover-veil-fill text-body text-ink-2 transition-colors duration-150 ease-ui hover:hover-veil-active hover:text-ink"
+    onClick={onNavigate}
+    className="group flex h-6 items-center gap-1.5 rounded-control px-2 text-small text-ink-2 transition-colors duration-150 ease-ui hover:bg-accent hover:text-ink"
   >
     <span
       aria-hidden
-      className="grid size-5 shrink-0 place-items-center text-ink-3 transition-colors duration-150 group-hover:text-ink-2"
+      className="grid size-4 shrink-0 place-items-center text-ink-4 transition-colors duration-150 group-hover:text-ink-3 [&_svg]:size-3.5"
     >
       {icon}
     </span>
