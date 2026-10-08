@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "node init && next dev",
+    "build": "node init && next build",
+    "start": "node init && next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",
@@ -20,11 +20,11 @@
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
     "check:mobile": "tsx scripts/check-mobile-nav.ts",
     "check:nav": "tsx scripts/check-nav.ts",
+    "check:scroll": "tsx scripts/check-scroll.ts",
     "check:redesign": "tsx scripts/check-redesign.ts",
     "audit:orphans": "tsx scripts/audit-orphans.ts",
     "db:sponsored": "tsx --env-file=.env.local scripts/set-sponsored.ts",
     "check:auth": "tsx scripts/check-auth.ts",
-    "duotone:vendor": "tsx scripts/vendor-duotone.ts",
     "db:promote": "tsx --env-file=.env.local scripts/promote-admin.ts"
   },
   "dependencies": {

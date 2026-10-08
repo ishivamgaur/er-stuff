@@ -23,7 +23,9 @@ const toDocument = (seed: ToolSeed, categoryIds: string[]) => ({
   slug: seed.slug,
   description: seed.description,
   websiteUrl: seed.websiteUrl,
-  logoUrl: null,
+  // logoUrl is captured by `db:capture-previews` and lives outside the seeds.
+  // It is deliberately absent from this $set: a reseed must never clobber the
+  // captured favicons back to null (that wiped all 47 once already).
   kind: "product" as const,
   categoryIds,
   tags: seed.tags,
@@ -33,7 +35,9 @@ const toDocument = (seed: ToolSeed, categoryIds: string[]) => ({
   alternatives: [],
   relatedTools: [],
   featured: false,
-  sponsored: false,
+  // `sponsored` keeps its schema default (false) on insert and is never
+  // touched here: it is runtime state, and a reseed must not end a live
+  // placement the way it once wiped the captured favicons.
   status: "published" as const,
   pricing: {
     type: seed.pricingType,

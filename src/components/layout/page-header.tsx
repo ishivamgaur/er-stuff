@@ -24,7 +24,7 @@ export const PageHeader = ({
   children,
   className,
 }: PageHeaderProps) => (
-  <header className={cn("rise mb-6", className)}>
+  <header className={cn("rise mb-5", className)}>
     {eyebrow ? <p className="label mb-2 text-brand">{eyebrow}</p> : null}
 
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -40,7 +40,7 @@ export const PageHeader = ({
     </div>
 
     {description ? (
-      <p className="mt-2.5 max-w-[60ch] text-lead leading-relaxed text-pretty text-ink-2">
+      <p className="mt-2 max-w-[60ch] text-body leading-relaxed text-pretty text-ink-2">
         {description}
       </p>
     ) : null}

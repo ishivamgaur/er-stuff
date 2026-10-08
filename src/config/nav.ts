@@ -72,42 +72,29 @@ export const NAV_ITEMS: readonly NavItem[] = [
       "The tools you write code with: editors, terminals, AI coding, agents, git and testing.",
     sections: [
       section(
-        "editors-ides",
-        "Editors & IDEs",
-        "Where the code gets written: editors, IDEs, extensions and dev containers.",
-        [
-          "ides-editors",
-          "extensions-plugins",
-          "dev-containers",
-          "remote-development",
-          "whiteboards",
-        ],
+        "editors-setup",
+        "Editors & Setup",
+        "Where the code gets written: editors, terminals, extensions and dev environments.",
+        ["ides-editors", "extensions-plugins", "dev-containers", "remote-development", "terminals"],
       ),
-      section("terminals", "Terminals", "Terminal emulators, prompts and shell tooling.", [
-        "terminals",
-      ]),
-      section("ai-coding", "AI Coding", "AI pair programmers and AI-first editors.", [
-        "ai-coding-tools",
-        "ai-ides",
-      ]),
-      section("agents-mcp", "Agents & MCP", "Coding agents, agent runners and MCP tooling.", [
-        "ai-agents",
-      ]),
+      section(
+        "ai-coding",
+        "AI Coding",
+        "AI pair programmers, AI-first editors and coding agents.",
+        ["ai-coding-tools", "ai-ides", "ai-agents"],
+      ),
       section(
         "git-review",
-        "Git & Code Review",
-        "Git clients, hosted git and code review workflows.",
-        ["git-clients", "git-hosting", "code-review"],
+        "Git & Review",
+        "Git clients, hosted git, code review and searching codebases.",
+        ["git-clients", "git-hosting", "code-review", "code-search"],
       ),
       section(
-        "code-search-issues",
-        "Code Search & Issues",
-        "Searching codebases and tracking work.",
-        ["code-search", "issue-tracking"],
+        "plan-test",
+        "Planning & Testing",
+        "Tracking work, sketching ideas and testing the result.",
+        ["issue-tracking", "whiteboards", "frontend-testing"],
       ),
-      section("testing-e2e", "Testing & E2E", "Unit, browser and end-to-end testing tools.", [
-        "frontend-testing",
-      ]),
     ],
   },
   {

@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
+import { cookies } from "next/headers"
 import { IndexGroup } from "@/components/tools/index-row"
 import { PageHeader } from "@/components/layout/page-header"
+import { VIEW_COOKIE, resolveView } from "@/lib/view"
 import { findTools } from "@/lib/db/tools"
 import { toolQuerySchema } from "@/schemas/tool-query"
 
@@ -27,6 +29,7 @@ export default async function FreePage({ searchParams }: PageProps) {
   const selfHostable = result.items.filter((tool) => tool.capabilities.selfHostable === true)
 
   const freeCount = freeForever.length + freeTier.length + openSource.length + selfHostable.length
+  const initialView = resolveView((await cookies()).get(VIEW_COOKIE)?.value)
 
   return (
     <div>
@@ -41,6 +44,7 @@ export default async function FreePage({ searchParams }: PageProps) {
         title="Free forever"
         description="No trial, no card, no expiry."
         tools={freeForever}
+        initialView={initialView}
       />
 
       <IndexGroup
@@ -48,6 +52,7 @@ export default async function FreePage({ searchParams }: PageProps) {
         title="Free tier"
         description="A limited free plan. Credit card requirement is listed per tool."
         tools={freeTier}
+        initialView={initialView}
       />
 
       <IndexGroup
@@ -55,6 +60,7 @@ export default async function FreePage({ searchParams }: PageProps) {
         title="Open source"
         description="Source available, with the licence recorded where known."
         tools={openSource}
+        initialView={initialView}
       />
 
       <IndexGroup
@@ -62,6 +68,7 @@ export default async function FreePage({ searchParams }: PageProps) {
         title="Self hostable"
         description="You can run it yourself. Infrastructure cost is not included."
         tools={selfHostable}
+        initialView={initialView}
       />
     </div>
   )

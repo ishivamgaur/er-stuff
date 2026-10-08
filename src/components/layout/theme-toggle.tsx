@@ -62,7 +62,7 @@ const getServerTheme = (): Theme => "dark"
  * This is the one deliberate exception to the no-inline-SVG rule: the motion
  * needs both shapes present and transitioning against each other.
  */
-const GLYPH = "size-4 transition-[opacity,transform] duration-300 ease-ui"
+const GLYPH = "size-3.5 transition-[opacity,transform] duration-300 ease-ui"
 
 const MoonGlyph = ({ visible }: { visible: boolean }) => (
   <svg

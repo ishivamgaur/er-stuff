@@ -1,14 +1,16 @@
 "use client"
 
 import { useCallback, useRef, useState } from "react"
-import { IndexRow } from "@/components/tools/index-row"
+import { IndexCard, IndexRow } from "@/components/tools/index-row"
 import { PricingBadge } from "@/components/tools/pricing-badge"
+import { useListView } from "@/components/layout/view-toggle"
+import type { ListView } from "@/lib/view"
 import type { PlainTool } from "@/lib/db/plain-tool"
 
 const PREVIEW_WIDTH_REM = 20
 
 const PreviewContent = ({ tool }: { tool: PlainTool }) => (
-  <div className="rounded-card border border-line bg-surface p-4 shadow-xl">
+  <div className="rounded-card border border-line bg-surface p-4">
     {tool.previewImageUrl ? (
       <div className="overflow-hidden rounded-chip border border-line">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -24,13 +26,13 @@ const PreviewContent = ({ tool }: { tool: PlainTool }) => (
       </div>
     ) : null}
 
-    <div className="mt-3 flex items-center gap-2">
+    <div className="mt-2 flex items-center gap-2">
       <p className="min-w-0 flex-1 truncate text-body font-semibold text-ink">{tool.name}</p>
       <PricingBadge type={tool.pricing.type} />
     </div>
     <p className="mt-1 line-clamp-2 text-small leading-snug text-ink-2">{tool.description}</p>
 
-    <dl className="mt-3 space-y-1 border-t border-line pt-2.5">
+    <dl className="mt-2 space-y-1 border-t border-line pt-2">
       {tool.pricing.startingPrice !== null ? (
         <div className="flex justify-between gap-3">
           <dt className="font-mono text-micro text-ink-4">from</dt>
@@ -64,12 +66,15 @@ const PreviewContent = ({ tool }: { tool: PlainTool }) => (
 type IndexListProps = {
   tools: PlainTool[]
   basePath?: string
+  /** Server-read stored view, so the first paint matches with no flash. */
+  initialView?: ListView
 }
 
 const PANEL_ESTIMATED_HEIGHT = 380
 const VIEWPORT_MARGIN = 16
 
-export const IndexList = ({ tools, basePath = "/tools" }: IndexListProps) => {
+export const IndexList = ({ tools, basePath = "/tools", initialView }: IndexListProps) => {
+  const view = useListView(initialView)
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [offsetTop, setOffsetTop] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -97,6 +102,21 @@ export const IndexList = ({ tools, basePath = "/tools" }: IndexListProps) => {
   }, [])
 
   const activeTool = activeIndex === null ? null : (tools[activeIndex] ?? null)
+
+  // Cards need no hover preview: the tile already shows what the preview
+  // would — name, description, pricing — so the pointer tracking stays off.
+  // gap-5, not gap-4: every tile wears the roomy rim, whose outline stands
+  // 3px proud, and a wide tile wants visibly more air outside than the 14px
+  // it keeps inside.
+  if (view === "cards") {
+    return (
+      <div className="grid gap-5 sm:grid-cols-2">
+        {tools.map((tool, index) => (
+          <IndexCard key={tool.slug} tool={tool} basePath={basePath} index={index} />
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="group/list relative" ref={containerRef} onMouseLeave={handleLeave}>

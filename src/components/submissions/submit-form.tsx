@@ -49,7 +49,7 @@ export const SubmitForm = () => {
         }
         router.refresh()
       }}
-      className="mt-5"
+      className="mt-2"
     >
       <FieldGroup>
         <Field>

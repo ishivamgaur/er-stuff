@@ -1,32 +1,31 @@
 /**
- * The one icon entry point.
+ * The one icon source for app code.
  *
- * The artwork is Reicon, not hand drawn and not Lucide. reicon-react ships
- * two weights; this project uses duotone where the beta BoldDuotone set has
- * the glyph, and `Filled` everywhere else. Duotone is the same base path as
- * Filled with a detail path at half opacity, so the two still read as one
- * set, and both paint through `currentColor` so the theme owns the colour.
- * Outline is never used: it reads as wireframe next to dense monospace type.
+ * The artwork is Reicon, always the Filled weight: one weight everywhere, so
+ * a menu glyph never renders with a different voice than its neighbours.
+ * Duotone was tried and removed — at 14px the half-opacity detail layer
+ * turns to mud, and thirteen duotone glyphs beside fifteen Filled ones never
+ * read as one set. Both paint through `currentColor` so the theme owns the
+ * colour. Outline is never used: it reads as wireframe next to dense mono
+ * type.
  *
  * Everything is wrapped rather than re-exported so the project keeps one import
  * surface and one set of house rules:
- * - weight is decided here (duotone, else Filled); no call site picks it
- * - `size-4` and `shrink-0` baked in, so a bare icon is never misaligned.
+ * - `weight="Filled"` here, never at a call site; no call site picks a weight
+ * - `size-3.5` and `shrink-0` baked in, so a bare icon is never misaligned.
  *   Reicon renders `width`/`height` attributes at 24; the class wins.
  * - `aria-hidden`, because every icon here sits next to a text label
  *
  * The generated shadcn files under `src/components/ui/` import reicon-react
  * directly instead of through here, the same escape hatch they had with
- * Lucide. None of their glyphs exist in the duotone set, so they pass
- * `weight="Filled"` at the call site. A future `shadcn add` will reintroduce
- * lucide-react imports; re-map them before committing.
- *
- * The duotone subset is vendored by `npm run duotone:vendor` — when adding a
- * glyph here that the set covers, add its reicon name to the script's list.
+ * Lucide. They pass `weight="Filled"` at each call site — the same weight
+ * as here, so generated and app icons never diverge. A future `shadcn add`
+ * will reintroduce lucide-react imports; re-map them before committing.
  */
 
 import {
   AlertCircle,
+  AlignLeft,
   ArrowUpRightSquare,
   Bullhorn,
   Check,
@@ -36,6 +35,7 @@ import {
   Database,
   Frame,
   Gift,
+  Grid,
   Inbox,
   InfoCircle,
   Logout,
@@ -55,48 +55,27 @@ import {
   type IconComponent,
 } from "reicon-react"
 import { cn } from "@/lib/utils"
-import { DUOTONE } from "./duotone-data"
 
 type IconProps = {
   className?: string
 }
 
-const kebab = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()
-
 /**
  * Every icon is the same component with a different glyph, so the wrapper is
  * generated once. It is a named function rather than an arrow so the component
- * keeps a name in the React tree and in DevTools. The duotone lookup happens
- * at module scope, once, from the glyph's own display name.
+ * keeps a name in the React tree and in DevTools.
  */
-const icon = (Glyph: IconComponent) => {
-  const duotone = Glyph.displayName ? DUOTONE[kebab(Glyph.displayName)] : undefined
-
-  return function Icon({ className }: IconProps) {
-    if (duotone) {
-      return (
-        <svg
-          aria-hidden
-          focusable={false}
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          className={cn("reicon size-4 shrink-0", className)}
-          dangerouslySetInnerHTML={{ __html: duotone }}
-        />
-      )
-    }
-
+const icon = (Glyph: IconComponent) =>
+  function Icon({ className }: IconProps) {
     return (
       <Glyph
         aria-hidden
         focusable={false}
         weight="Filled"
-        className={cn("size-4 shrink-0", className)}
+        className={cn("size-3.5 shrink-0", className)}
       />
     )
   }
-}
 
 /** The prompt. The wordmark, not a logo mark, because it reads as a terminal. */
 export const PromptIcon = icon(TerminalSquare)
@@ -122,6 +101,9 @@ export const MegaphoneIcon = icon(Bullhorn)
  */
 export const TelescopeIcon = icon(Telescope)
 export const GiftIcon = icon(Gift)
+/* The rows glyph. `List` has no distinct Filled weight, so the toggle reads it from AlignLeft. */
+export const ListIcon = icon(AlignLeft)
+export const GridIcon = icon(Grid)
 export const ShapesIcon = icon(Shapes)
 export const PaletteIcon = icon(Palette)
 export const ComponentIcon = icon(Component)

@@ -7,8 +7,7 @@ import { IndexGroup } from "@/components/tools/index-row"
 import { VerifiedState } from "@/components/tools/verified-state"
 import { buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { ExternalIcon, InfoIcon } from "@/components/icons"
+import { ExternalIcon } from "@/components/icons"
 import { findCategoriesByIds, findToolBySlug, findTools, findToolsByIds } from "@/lib/db/tools"
 import { findSectionForSubcategory, sectionHref } from "@/config/nav"
 import { toolQuerySchema } from "@/schemas/tool-query"
@@ -21,11 +20,15 @@ type ToolDetailPageProps = {
 /*
  * A tool's category chips link to the section that now owns the subcategory,
  * not to the removed /categories routes. A category no section claims (there
- * should be none) renders as plain text rather than a link that 404s.
+ * should be none) renders as plain text rather than a link that 404s. The
+ * breadcrumb and the header meta name the owning section, not the raw
+ * subcategory slug — readers navigate the IA, never the plumbing.
  */
-const sectionHrefFromSubcategory = (slug: string): string | null => {
+const sectionLinkFromSubcategory = (slug: string): { href: string; label: string } | null => {
   const owner = findSectionForSubcategory(slug)
-  return owner ? sectionHref(owner.nav, owner.section.id) : null
+  return owner
+    ? { href: sectionHref(owner.nav, owner.section.id), label: owner.section.label }
+    : null
 }
 
 const formatDate = (value: Date | string | null): string | null => {
@@ -143,10 +146,7 @@ const TagGroup = ({ title, items }: { title: string; items: string[] }) => {
       <ul className="mt-2 flex flex-wrap gap-1.5">
         {items.map((item) => (
           <li key={item}>
-            <Badge
-              variant="secondary"
-              className="rounded-chip font-normal transition-transform duration-150 ease-ui hover:scale-105 active:scale-95"
-            >
+            <Badge variant="secondary" className="rounded-chip font-normal">
               {item}
             </Badge>
           </li>
@@ -203,7 +203,7 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
   const verifiedOn = formatDate(tool.verification.lastVerifiedAt)
 
   const firstCategory = categories[0]
-  const firstCategoryHref = firstCategory ? sectionHrefFromSubcategory(firstCategory.slug) : null
+  const firstSectionLink = firstCategory ? sectionLinkFromSubcategory(firstCategory.slug) : null
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -234,10 +234,10 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
           index
         </Link>
         <span aria-hidden>/</span>
-        {firstCategory && firstCategoryHref ? (
+        {firstSectionLink ? (
           <>
-            <Link href={firstCategoryHref} className="transition-colors hover:text-brand">
-              {firstCategory.name}
+            <Link href={firstSectionLink.href} className="transition-colors hover:text-brand">
+              {firstSectionLink.label}
             </Link>
             <span aria-hidden>/</span>
           </>
@@ -245,54 +245,51 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
         <span className="truncate text-ink-3">{tool.slug}</span>
       </nav>
 
-      <header className="rise mb-6">
-        <div className="flex items-start gap-4">
+      <header className="rise mb-5">
+        <div className="flex flex-wrap items-center gap-3">
           <ToolLogo
             name={tool.name}
             slug={tool.slug}
             logoUrl={tool.logoUrl}
-            className="size-12 shrink-0 rounded-[10px] border border-line"
+            className="size-10 shrink-0 rounded-lg border border-line"
           />
           <div className="min-w-0 flex-1">
-            <h1 className="text-display leading-tight font-semibold tracking-tight text-balance text-ink">
+            <h1 className="text-title leading-tight font-semibold tracking-tight text-ink">
               {tool.name}
             </h1>
-            <p className="mt-1.5 max-w-[60ch] text-lead leading-relaxed text-pretty text-ink-2">
-              {tool.description}
+            <p className="mt-1 truncate font-mono text-micro text-ink-4">
+              <span className={tool.pricing.type === "free" ? "text-brand" : undefined}>
+                {tool.pricing.type}
+              </span>
+              <span aria-hidden> / </span>
+              <span className={tool.verification.status === "verified" ? "text-brand" : undefined}>
+                {tool.verification.status === "verified"
+                  ? "verified"
+                  : tool.verification.status === "needs_review"
+                    ? "in review"
+                    : "not verified"}
+              </span>
+              {categories.map((category) => {
+                const link = sectionLinkFromSubcategory(category.slug)
+                if (!link) return null
+                return (
+                  <span key={category.slug}>
+                    <span aria-hidden> / </span>
+                    <Link href={link.href} className="transition-colors hover:text-brand">
+                      {link.label}
+                    </Link>
+                  </span>
+                )
+              })}
             </p>
           </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <PricingBadge type={tool.pricing.type} />
-          {tool.verification.status === "verified" ? (
-            <Badge className="rounded-chip font-mono font-medium">verified</Badge>
-          ) : (
-            <Badge variant="secondary" className="rounded-chip font-mono font-normal">
-              not verified
-            </Badge>
-          )}
-          {categories.map((category) => {
-            const href = sectionHrefFromSubcategory(category.slug)
-            if (!href) return null
-            return (
-              <Link
-                key={category.slug}
-                href={href}
-                className="rounded-chip border border-line bg-surface px-2 py-0.5 text-small text-ink-2 transition-all duration-150 ease-ui hover:scale-105 hover:border-brand/40 hover:text-ink"
-              >
-                {category.name}
-              </Link>
-            )
-          })}
-
-          <span className="ml-auto flex items-center gap-2">
+          <span className="ml-auto flex shrink-0 items-center gap-3">
             {tool.openSource.githubUrl ? (
               <a
                 href={tool.openSource.githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={buttonVariants({ variant: "outline" })}
+                className={buttonVariants({ variant: "outline", size: "sm" })}
               >
                 GitHub
               </a>
@@ -301,18 +298,21 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
               href={tool.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={buttonVariants({ className: "gap-1.5" })}
+              className={buttonVariants({ size: "sm", className: "gap-1.5" })}
             >
               Visit Site
               <ExternalIcon data-icon="inline-end" />
             </a>
           </span>
         </div>
+        <p className="mt-3 max-w-[60ch] text-body leading-relaxed text-pretty text-ink-2">
+          {tool.description}
+        </p>
       </header>
 
       {tool.previewImageUrl ? (
-        <div className="rule py-6">
-          <figure className="overflow-hidden rounded-card border border-line bg-surface shadow-xl dark:shadow-none dark:ring-1 dark:ring-white/10">
+        <div className="rule py-5">
+          <figure className="overflow-hidden rounded-card border border-line bg-surface rim-roomy">
             <div className="flex items-center gap-2 border-b border-line px-3.5 py-2.5">
               <span aria-hidden className="flex gap-1.5">
                 <span className="size-2.5 rounded-full bg-line-strong" />
@@ -337,16 +337,16 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
         </div>
       ) : null}
 
-      <div className="rule py-6">
+      <div className="rule py-5">
         <section>
           <h2 className="label text-ink-4">Details</h2>
-          <dl className="mt-1">
+          <dl className="mt-2">
             {buildFacts(tool).map((fact, index) => (
               <div
                 key={fact.label}
                 className={
                   index === 0
-                    ? "grid grid-cols-[10rem_minmax(0,1fr)] items-baseline gap-x-4 py-3"
+                    ? "grid grid-cols-[10rem_minmax(0,1fr)] items-baseline gap-x-4 py-2.5"
                     : "grid grid-cols-[10rem_minmax(0,1fr)] items-baseline gap-x-4 border-t border-dashed border-line py-3"
                 }
               >
@@ -357,9 +357,9 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
           </dl>
 
           {tool.pricing.freeTier ? (
-            <div className="mt-3 rounded-card border border-brand/25 bg-brand-tint/40 px-4 py-3">
+            <div className="mt-4 border-t border-dashed border-line pt-3">
               <p className="label text-brand">pricing.freeTier</p>
-              <p className="mt-1.5 text-small leading-relaxed whitespace-pre-wrap text-ink-2">
+              <p className="mt-2 text-small leading-relaxed whitespace-pre-wrap text-ink-2">
                 {tool.pricing.freeTier.description ?? "A free tier is available."}
                 {"\n"}creditCardRequired:{" "}
                 <VerifiedState
@@ -373,10 +373,10 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
         </section>
       </div>
 
-      <div className="rule py-6">
+      <div className="rule py-5">
         <section>
           <h2 className="label text-ink-4">Attributes</h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
             <TagGroup title="bestFor" items={tool.bestFor} />
             <TagGroup title="technologies" items={tool.technologies} />
             <TagGroup title="tags" items={tool.tags} />
@@ -403,18 +403,21 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
         />
       ) : null}
 
-      <div className="rule py-6">
+      <div className="rule py-5">
         <section>
-          <h2 className="label mb-3 text-ink-4">Verification</h2>
-          <Alert>
-            <InfoIcon />
-            <AlertTitle>{verifiedOn ? "Verified" : "Not Verified Yet"}</AlertTitle>
-            <AlertDescription>
+          <h2 className="label text-ink-4">Verification</h2>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span
+              className={`shrink-0 font-mono text-micro ${verifiedOn ? "text-brand" : "text-ink-4"}`}
+            >
+              {verifiedOn ? "verified" : "not verified"}
+            </span>
+            <p className="min-w-0 flex-1 text-small leading-relaxed text-ink-2">
               {verifiedOn
                 ? `Checked against an official source by a person on ${verifiedOn}.`
                 : "A person has not checked this entry against an official source. Fields marked not verified are unknown, not false."}
-            </AlertDescription>
-          </Alert>
+            </p>
+          </div>
         </section>
       </div>
     </div>

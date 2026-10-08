@@ -1,7 +1,7 @@
 import { chromium, type Page } from "@playwright/test"
 
 const BASE = "http://localhost:3000"
-const OUT = `${process.env.TEMP}/opencode/nav-glide.png`
+const OUT = `${process.env.TEMP}/opencode/nav-rail.png`
 
 let failures = 0
 const check = (label: string, ok: boolean, detail = "") => {
@@ -9,24 +9,8 @@ const check = (label: string, ok: boolean, detail = "") => {
   if (!ok) failures += 1
 }
 
-const rowBox = (page: Page, href: string) =>
-  page.evaluate((target: string) => {
-    const el = document.querySelector(`aside [data-nav-href="${target}"]`)
-    if (!el) return null
-    const r = el.getBoundingClientRect()
-    return { top: r.top, height: r.height }
-  }, href)
-
-const glideBox = (page: Page) =>
-  page.evaluate(() => {
-    const el = document.querySelector('aside [data-testid="sidebar-glide"]')
-    if (!el) return null
-    const r = el.getBoundingClientRect()
-    return { top: r.top, height: r.height, opacity: getComputedStyle(el).opacity }
-  })
-
 const currentSection = (page: Page) =>
-  page.locator('aside [aria-current="location"]').getAttribute("data-nav-href")
+  page.locator('aside [aria-current="location"]').getAttribute("href")
 
 const run = async () => {
   const browser = await chromium.launch()
@@ -34,101 +18,79 @@ const run = async () => {
   await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 60000 })
   await page.waitForTimeout(800)
 
-  const rows = await page.locator("aside [data-nav-href]").count()
-  check("rows carry data-nav-href", rows >= 14, `${rows} rows`)
+  const navRows = await page.locator('aside nav[aria-label="Navigation"] a').count()
+  check("the Navigation block lists seven routes", navRows === 7, `${navRows}`)
 
   const current = await page.locator('aside [aria-current="page"]').all()
   check("exactly one current nav row on /", current.length === 1, `${current.length}`)
+  const activeColor =
+    current.length === 1 ? await current[0]?.evaluate((el) => getComputedStyle(el).color) : null
+  check(
+    "the active row reads in the brand",
+    activeColor === "rgb(47, 129, 247)",
+    String(activeColor),
+  )
 
   const sections = await page.locator('aside nav[aria-label="Sections"] a').count()
-  check("the Sections block lists Build's sections", sections === 7, `${sections}`)
+  check("the Sections block lists Build's sections", sections === 4, `${sections}`)
 
+  // Regression guard: the floating mark is gone for good.
   const glides = await page.locator('aside [data-testid="sidebar-glide"]').count()
-  check("exactly one glide box", glides === 1, `${glides}`)
+  check("no floating mark exists", glides === 0, `${glides}`)
 
-  // No row paints its own fill; the box owns the mark.
+  // State is type, never a fill — at rest...
   const fills = await page.evaluate(() => {
     const bad: string[] = []
-    for (const el of document.querySelectorAll("aside [data-nav-href]")) {
+    for (const el of document.querySelectorAll("aside nav a")) {
       const bg = getComputedStyle(el).backgroundColor
-      if (!["rgba(0, 0, 0, 0)", "transparent"].includes(bg)) {
-        bad.push(`${(el as HTMLElement).dataset.navHref}=${bg}`)
-      }
+      if (bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent")
+        bad.push(`${el.getAttribute("href")}=${bg}`)
     }
     return bad
   })
   check("no row draws its own fill", fills.length === 0, fills.join(", "))
 
-  // The box rests on the active section — the scroll-spy's answer to "where
-  // am I" — not on the nav row, which keeps only its text emphasis.
-  const restingHref = await currentSection(page)
-  const rest = restingHref ? await rowBox(page, restingHref) : null
-  const restGlide = await glideBox(page)
-  const rests =
-    rest !== null &&
-    restGlide !== null &&
-    Math.abs(rest.top - restGlide.top) < 2 &&
-    Math.abs(rest.height - restGlide.height) < 2
+  // ...and on hover: the colour shifts, the background must not.
+  const target = 'aside nav[aria-label="Sections"] a[href="#git-review"]'
+  const before = await page.evaluate((sel) => {
+    const el = document.querySelector(sel)
+    if (!el) return null
+    const cs = getComputedStyle(el)
+    return { color: cs.color, bg: cs.backgroundColor }
+  }, target)
+  await page.locator(target).hover({ force: true })
+  await page.waitForTimeout(300)
+  const after = await page.evaluate((sel) => {
+    const el = document.querySelector(sel)
+    if (!el) return null
+    const cs = getComputedStyle(el)
+    return { color: cs.color, bg: cs.backgroundColor }
+  }, target)
   check(
-    "the box rests on the active section",
-    rests,
-    JSON.stringify({ restingHref, rest, restGlide }),
+    "hover shifts text colour only, never paints a fill",
+    before !== null &&
+      after !== null &&
+      before.color !== after.color &&
+      (after.bg === "rgba(0, 0, 0, 0)" || after.bg === "transparent") &&
+      after.bg === before.bg,
+    JSON.stringify({ before, after }),
   )
 
-  // Hover a section further down: mid-flight the box must be strictly between.
-  const from = restingHref ? ((await rowBox(page, restingHref))?.top ?? 0) : 0
-  const to = (await rowBox(page, "#git-review"))?.top ?? 0
-  await page.locator('aside [data-nav-href="#git-review"]').hover({ force: true })
-  await page.waitForTimeout(110)
-  const mid = await glideBox(page)
-  const gliding =
-    mid !== null && ((mid.top > from && mid.top < to) || (mid.top > to && mid.top < from))
-  check("the box glides between rows", gliding, JSON.stringify({ from, mid: mid?.top, to }))
-  await page.waitForTimeout(500)
-  const landed = await glideBox(page)
-  check(
-    "the box lands on the hovered row",
-    landed !== null && Math.abs(landed.top - to) < 2,
-    JSON.stringify(landed?.top),
-  )
-
-  // Hover across the blocks: section row back up to a nav row.
-  const navTo = (await rowBox(page, "/data"))?.top ?? 0
-  await page.locator('aside [data-nav-href="/data"]').hover({ force: true })
-  await page.waitForTimeout(500)
-  const crossLanded = await glideBox(page)
-  check(
-    "the box travels between the two blocks",
-    crossLanded !== null && Math.abs(crossLanded.top - navTo) < 2,
-    JSON.stringify(crossLanded?.top),
-  )
-
-  await page.locator('aside [data-nav-href="/data"]').click()
+  await page.locator('aside nav[aria-label="Navigation"] a[href="/data"]').click()
   await page.waitForURL(`${BASE}/data`, { timeout: 15000 })
-  // The pointer is still sitting on the row that was just clicked, and hover
-  // correctly outranks the active section — so move it off the rail before
-  // asking where the box rests.
-  await page.mouse.move(700, 500)
-  await page.waitForTimeout(600)
   const moved = await page.locator('aside [aria-current="page"]').all()
-  const movedHref = moved.length === 1 ? await moved[0]?.getAttribute("data-nav-href") : null
+  const movedHref = moved.length === 1 ? await moved[0]?.getAttribute("href") : null
   const dataSections = await page.locator('aside nav[aria-label="Sections"] a').allInnerTexts()
-  const movedRestHref = await currentSection(page)
-  const movedBox = movedRestHref ? await rowBox(page, movedRestHref) : null
-  const movedGlide = await glideBox(page)
   check(
-    "navigation moves current, sections and box together",
+    "navigation moves current and sections together",
     moved.length === 1 &&
       movedHref === "/data" &&
-      dataSections.some((text) => text.includes("SQL")) &&
-      movedBox !== null &&
-      movedGlide !== null &&
-      Math.abs(movedGlide.top - movedBox.top) < 2,
+      dataSections.some((text) => text.includes("SQL")),
     String(movedHref),
   )
 
   // A section row is a hash link: it changes the fragment, not the route.
-  await page.locator('aside [data-nav-href="#storage-files"]').click()
+  await page.locator('aside nav[aria-label="Sections"] a[href="#storage-files"]').click()
   await page.waitForTimeout(1600) // let Lenis finish gliding before the next scroll
   const hashUrl = page.url()
   check(
@@ -137,7 +99,7 @@ const run = async () => {
     hashUrl,
   )
 
-  // Scroll-spy: put a section under the reading band and the mark follows.
+  // Scroll-spy: put a section under the reading band and the current follows.
   await page.evaluate(() => {
     document.getElementById("search")?.scrollIntoView()
   })
@@ -145,33 +107,33 @@ const run = async () => {
   const spiedHref = await currentSection(page)
   check("the scroll-spy follows the reader", spiedHref === "#search", String(spiedHref))
 
-  await page.focus('aside [data-nav-href="/ai"]')
-  await page.waitForTimeout(500)
+  await page.focus('aside nav[aria-label="Navigation"] a[href="/ai"]')
+  await page.waitForTimeout(300)
   const focused = await page.evaluate(
-    () => (document.activeElement as HTMLElement | null)?.dataset.navHref ?? null,
+    () => (document.activeElement as HTMLElement | null)?.getAttribute("href") ?? null,
   )
-  const focusGlide = await glideBox(page)
-  const focusBox = await rowBox(page, "/ai")
+  const focusedFill = await page.evaluate(() => {
+    const el = document.activeElement
+    if (!(el instanceof Element)) return null
+    return getComputedStyle(el).backgroundColor
+  })
   check(
-    "the box follows keyboard focus",
+    "keyboard focus lands on the focused row without a fill",
     focused === "/ai" &&
-      focusGlide !== null &&
-      focusBox !== null &&
-      Math.abs(focusGlide.top - focusBox.top) < 2,
-    String(focused),
+      focusedFill !== null &&
+      (focusedFill === "rgba(0, 0, 0, 0)" || focusedFill === "transparent"),
+    JSON.stringify({ focused, focusedFill }),
   )
 
-  // Off the nav routes there is no section block and no active row: the box
-  // hides rather than pretending to a position.
+  // Off the nav routes there is no section block and no active row.
   await page.goto(`${BASE}/free`, { waitUntil: "networkidle", timeout: 60000 })
   await page.waitForTimeout(700)
-  const freeSectionRows = await page.locator('aside [data-nav-href^="#"]').count()
+  const freeSectionRows = await page.locator('aside nav[aria-label="Sections"] a').count()
   const freeCurrent = await page.locator('aside [aria-current="page"]').count()
-  const freeGlide = await glideBox(page)
   check(
-    "non-nav pages drop the section block and the mark",
-    freeSectionRows === 0 && freeCurrent === 0 && (freeGlide?.opacity ?? "1") === "0",
-    JSON.stringify({ freeSectionRows, freeCurrent, freeGlide }),
+    "non-nav pages drop the section block and the current row",
+    freeSectionRows === 0 && freeCurrent === 0,
+    JSON.stringify({ freeSectionRows, freeCurrent }),
   )
 
   await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 60000 })

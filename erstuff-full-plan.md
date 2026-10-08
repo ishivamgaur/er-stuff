@@ -228,10 +228,10 @@ Navigation                      Page header
   Ship
   AI
 Sections (of Build)
-  Editors & IDEs   ← scroll-spy highlights while scrolling
+  Editors & Setup   ← scroll-spy highlights while scrolling
   AI Coding
-  Agents & MCP
-  Git & Code Review
+  Git & Review
+  Planning & Testing
   ...
 ```
 
@@ -240,15 +240,15 @@ Sections (of Build)
 Seven items. Each is a real route; each renders every one of its sections
 stacked on a single page.
 
-| Nav item            | Route         | Sections                                                                                                            |
-| ------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Build** (default) | `/`           | Editors & IDEs · Terminals · AI Coding · Agents & MCP · Git & Code Review · Code Search & Issues · Testing & E2E    |
-| **Components**      | `/components` | Component Libraries · Headless UI · Forms & Tables · Charts · Motion & Animation                                    |
-| **Frontend**        | `/frontend`   | Design Inspiration · Design Systems & UI Kits · Fonts, Icons & Color · Frameworks · Styling & State · Accessibility |
-| **Backend**         | `/backend`    | Runtimes · APIs · Auth · Payments · Email · Queues & Jobs                                                           |
-| **Data**            | `/data`       | SQL · NoSQL · Vector · Cache · ORMs & Migrations · Database Hosting & GUIs · Storage & Files · Search               |
-| **Ship**            | `/ship`       | Hosting · Serverless & Edge · Deployment · CI/CD · Containers & IaC · Monitoring & Analytics                        |
-| **AI**              | `/ai`         | LLM APIs & Models · AI SDKs · RAG & Embeddings · Evaluation & Observability · Image & Video                         |
+| Nav item            | Route         | Sections                                                                      |
+| ------------------- | ------------- | ----------------------------------------------------------------------------- |
+| **Build** (default) | `/`           | Editors & Setup · AI Coding · Git & Review · Planning & Testing               |
+| **Components**      | `/components` | Component Libraries · Headless UI · Forms & Tables · Charts & Motion          |
+| **Frontend**        | `/frontend`   | Design Assets · Frameworks · Styling & State · Accessibility                  |
+| **Backend**         | `/backend`    | Runtimes · APIs · Auth · Payments, Email & Jobs                               |
+| **Data**            | `/data`       | Databases · ORMs & Tools · Hosting & Backups · Storage & Search               |
+| **Ship**            | `/ship`       | Hosting & Edge · Deploy & Release · Containers & IaC · Monitoring & Analytics |
+| **AI**              | `/ai`         | Models & SDKs · RAG & Embeddings · Eval & Observability · Image & Video       |
 
 ## Section mapping rule
 
@@ -272,8 +272,8 @@ other way round.
 - Clicking a nav item navigates to its route. The sidebar's Sections block
   then lists that nav's sections.
 - Scrolling the page moves the section highlight (IntersectionObserver
-  scroll-spy); the same floating fill used for nav rows rests on the current
-  section, so the sidebar always answers "where am I".
+  scroll-spy); the current section takes medium weight and `aria-current` in
+  the sidebar, so the sidebar always answers "where am I".
 - Clicking a section scrolls to it (Lenis glides) and the URL carries the
   hash, so `/{nav}#{section}` is shareable and works across navigations.
 - The Sections block renders only on nav routes. On tool pages, `/free`,
@@ -345,7 +345,7 @@ Three levels exist, and each has a different job:
 
 ```text
 Nav item   Build                a route, a sidebar entry, a page
-  Section  Agents & MCP         a heading on that page, a scroll-spy anchor
+  Section  AI Coding            a heading on that page, a scroll-spy anchor
     Subcategory  ai-agents      the data plumbing: where tools are tagged
 ```
 
@@ -362,14 +362,11 @@ Example, Build:
 
 ```text
 Build  (/)
-├── Editors & IDEs      ides-editors, extensions-plugins, dev-containers,
-│                       remote-development, whiteboards
-├── Terminals           terminals
-├── AI Coding           ai-coding-tools, ai-ides
-├── Agents & MCP        ai-agents
-├── Git & Code Review   git-clients, git-hosting, code-review
-├── Code Search & Issues  code-search, issue-tracking
-└── Testing & E2E       frontend-testing
+├── Editors & Setup     ides-editors, extensions-plugins, dev-containers,
+│                       remote-development, terminals
+├── AI Coding           ai-coding-tools, ai-ides, ai-agents
+├── Git & Review        git-clients, git-hosting, code-review, code-search
+└── Planning & Testing  issue-tracking, whiteboards, frontend-testing
 ```
 
 The same tool can belong to multiple relevant sections.
@@ -893,13 +890,10 @@ order. There is no separate marketing landing page.
 
 PageHeader
 Sponsored rail (clearly labelled)
-Editors & IDEs
-Terminals
+Editors & Setup
 AI Coding
-Agents & MCP
-Git & Code Review
-Code Search & Issues
-Testing & E2E
+Git & Review
+Planning & Testing
 ```
 
 The homepage must immediately communicate the directory itself, not a pitch.
@@ -1695,10 +1689,10 @@ Prefer:
 
 Section dividers are dashed hairlines: a solid rule between two blocks of equal
 weight reads as a table cell, and the index is not a table. Tags render as
-small labels with a dot. The palette is neutral with one accent: burgundy on
-neutral surfaces, deep wine on light and a lightened rose on dark, plus
+small labels with a dot. The palette is neutral with one accent: electric blue on
+neutral surfaces, a closest passing cut on light and GitHub Primer's blue on dark, plus
 destructive red, which never moves. The primary button fills with the accent,
-links, counts and icons take it straight, and `free` is a burgundy dot plus a
+links, counts and icons take it straight, and `free` is a blue dot plus a
 word. Row hovers and every surface stay gray — the accent marks state, it does
 not decorate. Headings are sentence case. Entrance
 motion is a short fade-and-rise with a blur, staggered down a list on first
@@ -1772,7 +1766,7 @@ sections stacked:
 ```text
 AI                              (PageHeader: count, title, description)
 
-LLM APIs & Models               12
+Models & SDKs                   12
 OpenAI, Anthropic, ...
 ...
 
@@ -1784,9 +1778,9 @@ Sidebar beside it:
 
 ```text
 Navigation
-  AI                ← current page, glide box resting
+  AI                ← current page (medium weight + brand icon)
 Sections
-  LLM APIs & Models ← glide box follows the scroll position
+  Models & SDKs     ← current section follows the scroll position
   RAG & Embeddings
   ...
 ```

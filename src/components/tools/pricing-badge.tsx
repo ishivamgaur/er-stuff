@@ -12,7 +12,7 @@ const LABELS: Record<PricingType, string> = {
 
 /*
  * Pricing as a dot plus a word, not a pill. The dot carries the one
- * meaningful state in the list — burgundy for free, gray for everything else —
+ * meaningful state in the list — sky blue for free, gray for everything else —
  * and the word carries the detail. `free` also goes medium because it is the
  * answer most readers are scanning for.
  */

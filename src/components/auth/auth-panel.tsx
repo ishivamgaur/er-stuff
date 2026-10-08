@@ -41,7 +41,7 @@ export const AuthPanel = ({ googleEnabled }: AuthPanelProps) => (
               <span className="font-mono text-micro text-ink-2">GOOGLE_CLIENT_SECRET</span> to
               enable it.
             </p>
-            <Button type="button" variant="ghost" size="sm" onClick={() => authClient.signOut()}>
+            <Button type="button" variant="outline" size="sm" onClick={() => authClient.signOut()}>
               Clear Any Stale Session
             </Button>
           </CardContent>

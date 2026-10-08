@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { ALL_SECTIONS, NAV_ITEMS, sectionHref } from "@/config/nav"
 import { SearchIcon } from "@/components/icons"
-import { Button } from "@/components/ui/button"
 import {
   CommandDialog,
   CommandEmpty,
@@ -134,18 +133,19 @@ export const CommandPalette = () => {
 
   return (
     <>
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={() => setIsOpen(true)}
         aria-label="Search"
-        className="gap-1.5 text-ink-3"
+        title="Search (Ctrl+K)"
+        className="flex h-7 shrink-0 items-center gap-1.5 rounded-control px-1.5 text-ink-4 transition-colors duration-150 ease-ui hover:text-ink-2"
       >
         <SearchIcon />
-        <span className="hidden sm:inline">Search</span>
-        <span className="kbd hidden sm:inline-flex">Ctrl K</span>
-      </Button>
+        <span aria-hidden className="flex items-center gap-1">
+          <span className="kbd">Ctrl</span>
+          <span className="kbd">K</span>
+        </span>
+      </button>
 
       <CommandDialog
         open={isOpen}
