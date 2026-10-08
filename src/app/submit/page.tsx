@@ -28,7 +28,7 @@ export default async function SubmitPage() {
       />
 
       {submissions.length > 0 ? (
-        <section className="rule py-6">
+        <section className="rule py-5">
           <h2 className="label text-ink-4">Your Submissions</h2>
           <ul className="rule mt-2">
             {submissions.map((submission) => (
@@ -57,13 +57,13 @@ export default async function SubmitPage() {
         </section>
       ) : null}
 
-      <section className="rule py-6">
+      <section className="rule py-5">
         <h2 className="label text-ink-4">New Submission</h2>
 
         {allowed ? (
           <SubmitForm />
         ) : (
-          <Alert className="mt-3">
+          <Alert className="mt-2">
             <InfoIcon />
             <AlertTitle>Queue Full</AlertTitle>
             <AlertDescription>

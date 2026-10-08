@@ -2,6 +2,8 @@ import Link from "next/link"
 import { MobileNav } from "@/components/layout/mobile-nav"
 import { CommandPalette } from "@/components/search/command-palette"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
+import { ViewToggle } from "@/components/layout/view-toggle"
+import type { ListView } from "@/lib/view"
 import { AccountMenu } from "@/components/auth/account-menu"
 import { buttonVariants } from "@/components/ui/button"
 import type { Viewer } from "@/components/layout/viewer"
@@ -11,17 +13,19 @@ type ToolbarProps = {
   identity: { name: string; tagline: string }
   counts: ReadonlyMap<string, number>
   viewer: Viewer | null
+  initialView?: ListView
 }
 
-export const Toolbar = ({ total, identity, counts, viewer }: ToolbarProps) => (
-  <div className="sticky top-0 z-30 flex h-14 items-center gap-1.5 border-b border-line bg-page/85 px-4 backdrop-blur-md sm:px-6">
+export const Toolbar = ({ total, identity, counts, viewer, initialView }: ToolbarProps) => (
+  <div className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-page/85 px-4 backdrop-blur-md sm:px-6">
     <MobileNav identity={identity} counts={counts} viewer={viewer} />
 
     <CommandPalette />
 
     <p className="numeric ml-2 hidden text-ink-4 md:block">{total} tools</p>
 
-    <div className="ml-auto flex items-center gap-1">
+    <div className="ml-auto flex items-center gap-2">
+      <ViewToggle {...(initialView ? { initialView } : {})} />
       <ThemeToggle />
       {viewer ? (
         <AccountMenu viewer={viewer} />

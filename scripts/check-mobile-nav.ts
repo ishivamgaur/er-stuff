@@ -79,7 +79,7 @@ check("focus moved into drawer", focusedInDrawer)
 check("browse links in drawer", (await dialog.getByRole("link").count()) >= 14)
 check(
   "sections listed for the current route",
-  (await dialog.locator('a[href="#terminals"]').count()) === 1,
+  (await dialog.locator('a[href="#editors-setup"]').count()) === 1,
 )
 
 // Navigating closes the drawer
@@ -107,8 +107,8 @@ check(
   (await page.evaluate(() => getComputedStyle(document.body).overflow)) !== "hidden",
 )
 
-// Reopen, dismiss with Escape. The drawer now renders a whole family plus
-// glide measurements on open, so wait for it to settle instead of sleeping.
+// Reopen, dismiss with Escape. The drawer now renders the whole nav family
+// on open, so wait for it to settle instead of sleeping.
 await page.getByRole("button", { name: "Open navigation" }).click()
 await page.getByRole("button", { name: "Close navigation" }).waitFor({ timeout: 5000 })
 await page.keyboard.press("Escape")

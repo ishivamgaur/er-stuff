@@ -57,7 +57,7 @@ export const MobileNav = ({ identity, counts, viewer }: MobileNavProps) => {
         aria-modal="true"
         showCloseButton={false}
         style={{ width: "16rem" }}
-        className="gap-0 border-line bg-page/85 p-0 backdrop-blur-md glass-edge lg:hidden"
+        className="gap-0 border-line bg-page p-0 glass-edge lg:hidden"
       >
         <SheetTitle className="sr-only">Navigation</SheetTitle>
 
@@ -81,7 +81,10 @@ export const MobileNav = ({ identity, counts, viewer }: MobileNavProps) => {
           </Button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2">
+        <div
+          data-lenis-prevent
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2"
+        >
           <SidebarNav counts={counts} onNavigate={close} isCollapsed={false} />
 
           <div className="mt-4 flex flex-col gap-1 border-t border-line pt-3">
@@ -140,11 +143,11 @@ const DrawerLink = ({
   <Link
     href={href}
     onClick={onNavigate}
-    className="group flex h-6 items-center gap-1.5 rounded-control px-2 text-small text-ink-2 transition-colors duration-150 ease-ui hover:bg-accent hover:text-ink"
+    className="group flex h-6 items-center gap-1.5 rounded-control px-2 text-small text-ink-2 transition-colors duration-150 ease-ui hover:text-ink"
   >
     <span
       aria-hidden
-      className="grid size-4 shrink-0 place-items-center text-ink-4 transition-colors duration-150 group-hover:text-ink-3 [&_svg]:size-3.5"
+      className="grid size-4 shrink-0 place-items-center text-ink-4 transition-colors duration-150 group-hover:text-ink-3"
     >
       {icon}
     </span>

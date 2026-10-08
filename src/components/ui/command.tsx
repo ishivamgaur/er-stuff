@@ -48,10 +48,11 @@ function CommandDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       <DialogContent
-        className={cn("top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0", className)}
+        className={cn("top-1/3 translate-y-0 overflow-hidden rounded-xl! rim-roomy p-0", className)}
         showCloseButton={showCloseButton}
       >
-        {children}
+        {/* cmdk's Input and List read a context only <Command> creates. */}
+        <Command>{children}</Command>
       </DialogContent>
     </Dialog>
   )
@@ -73,7 +74,7 @@ function CommandInput({
           {...props}
         />
         <InputGroupAddon>
-          <SearchIcon weight="Filled" className="size-4 shrink-0 opacity-50" />
+          <SearchIcon weight="Filled" className="size-3.5 shrink-0 opacity-50" />
         </InputGroupAddon>
       </InputGroup>
     </div>
@@ -84,6 +85,7 @@ function CommandList({ className, ...props }: React.ComponentProps<typeof Comman
   return (
     <CommandPrimitive.List
       data-slot="command-list"
+      data-lenis-prevent
       className={cn(
         "no-scrollbar max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto overscroll-contain outline-none",
         className,

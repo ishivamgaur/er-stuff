@@ -79,14 +79,14 @@ local values.
 | `dev` | dev server |
 | `verify` | typecheck, lint, format check, test, build. Run before every commit. |
 | `db:seed:categories` | seeds the 10 categories and ~111 sections from config |
-| `db:seed:tools` | upserts tool seed data |
+| `db:seed:tools` | upserts tool seed data, preserving runtime fields (`logoUrl`, `sponsored`) — see 5.26 |
 | `db:capture-previews` | visits every tool site, saves a screenshot and favicon |
 | `check:mobile` | Playwright assertions for the drawer, overflow, focus and scroll lock |
-| `check:nav` | asserts one gliding box that rests on the current row, travels mid-flight on hover, lands with navigation and keyboard focus, and that no row paints its own fill |
+| `check:nav` | asserts the rail paints no floating mark and no row fills, that hover shifts text only, and that navigation, hash links, the scroll-spy and keyboard focus all land |
+| `check:scroll` | asserts the rail, drawer and palette lists scroll under Lenis, that navigation resets page scroll, and that section anchors land under the toolbar |
 | `check:redesign` | smoke assertions for the theme (dark/light backgrounds, accent CTA), headings, overflow and zero page errors, plus screenshots to `TEMP/opencode/new-*` |
 | `audit:orphans` | reachability graph from the Next entry points, lists unreachable modules |
 | `check:auth` | Playwright assertions for signup, session, submission, guards, signout |
-| `duotone:vendor` | re-downloads the BoldDuotone subset from reicon.dev and regenerates `src/components/icons/duotone-data.ts` |
 | `db:promote` | grants the admin role to one account, the only way in |
 | `db:sponsored` | flag or unflag one tool as sponsored, for exercising the rail |
 
@@ -356,9 +356,34 @@ piece. A generation counter keeps rapid toggles safe: only the newest swap
 releases the guard. Verified by probe: the computed colour of a transitioning
 row is already the final value the moment the click handler returns.
 
+### 5.25 Lenis eats the wheel over nested scrollers
+
+Lenis owns the window wheel, so a wheel over any nested scroll container
+scrolls the page behind it instead — or nowhere at all when body scroll is
+locked by the drawer modal, which reads as "scrolling is broken". The rail,
+the drawer, the palette list, the dropdown and the select each carry
+`data-lenis-prevent`, which Lenis honours natively. `overscroll-contain`
+alone does not fix it: that only stops scroll chaining once the container
+moves, and the container never moves because Lenis intercepts first.
+`npm run check:scroll` forces each one to overflow and wheels over it.
+
+Symptom to recognise: a scrollable list whose `scrollTop` stays 0 under the
+wheel while the page behind it moves (or nothing moves with a modal open).
+A glide that "stalls" part way is usually something else: the page simply
+ends, and the target cannot travel further — check the document height
+before blaming the scroller.
+
+### 5.26 A reseed must not clobber runtime fields
+
+`db:seed:tools` upserts with `$set`, so any field in its document literal is
+rewritten on every run — including fields the seeds do not own. This once
+wiped all 47 captured favicons (`logoUrl: null`) and cleared the local
+sponsored flag in a single reseed. Captured assets and runtime state stay out
+of the `$set` and keep the schema default on insert instead.
+
 ## 6. Design system
 
-The interface is a minimal directory with one accent: burgundy on neutral
+The interface is a minimal directory with one accent: electric blue on neutral
 surfaces, one line per tool, sections separated by dashed hairlines, counts
 leading every heading. It is a principle, not a costume. The references are
 designeer.xyz for density (one line per tool, the hover preview, counts
@@ -369,23 +394,19 @@ reveals, color only for meaningful state.
 - **Do not render literal markdown markers.** Structure comes from spacing, one
   hairline and weight.
 - `src/components/icons/index.tsx` is the only icon source for app code. The
-  artwork is Reicon: BoldDuotone where the beta set has the glyph, Filled
-  everywhere else, wrapped rather than re-exported, so the entry point keeps
-  the house rules: 16px, `currentColor` only, `aria-hidden` because every
-  icon has a text label beside it, and no call site can pick a weight. The
-  npm package ships Outline and Filled only, so the duotone subset is vendored
-  from reicon.dev by `npm run duotone:vendor` into `duotone-data.ts`; it is
-  the same artwork family as Filled (base path plus a detail layer at half
-  opacity), so a duotone glyph beside a Filled fallback still reads as one
-  set. Outline is never used — it reads as wireframe next to dense mono type —
-  and the icon set test fails if a glyph is missing Filled data or if the
-  wrapper skips duotone where the vendored set has it. The one exception is
-  `src/components/ui/*`: generated shadcn files import `reicon-react`
-  directly, the same escape hatch they had with Lucide, with
-  `weight="Filled"` passed at each call site — none of them use the wrapper,
-  so they never take the duotone branch. No second icon set and no
-  inline SVG in a component, in both places. The one exception is the theme
-  toggle: its sun and moon are hand-drawn and cross-fade against each other,
+  artwork is Reicon, always the Filled weight, wrapped rather than
+  re-exported, so the entry point keeps the house rules: 14px, `currentColor`
+  only, `aria-hidden` because every icon has a text label beside it, and no
+  call site can pick a weight. Duotone was tried and removed: at 14px the
+  half-opacity detail layer turns to mud, and thirteen duotone glyphs beside
+  fifteen Filled ones never read as one set. Outline is never used — it reads
+  as wireframe next to dense mono type — and the icon set test fails if a
+  glyph is missing Filled data. The one exception is `src/components/ui/*`:
+  generated shadcn files import `reicon-react` directly, the same escape
+  hatch they had with Lucide, with `weight="Filled"` passed at each call
+  site. No second icon set and no inline SVG in a component, in both places.
+  The one exception is the theme toggle: its sun and moon are hand-drawn and
+  cross-fade against each other,
   which needs both shapes present in one control.
 - `DetailList` in `components/tools/detail-panel.tsx` is the facts list. Field
   names are the real schema paths, for example `pricing.freeTier`, so the page
@@ -413,12 +434,12 @@ ink        #fafafa        #09090b
 ink-2      #b4b4ba        #3f3f46
 ink-3      #8e8e96        #63636b
 ink-4      #80808a        #76767e
-brand      #de7f9c        #8c1d40
-tint       #1e151a        #f1e8eb
+brand      #2f81f7        #1f67de
+tint       #0d1526        #e8effc
 ```
 
-`brand` is the one accent, burgundy: lightened to a rose on dark so links keep
-their contrast, deep wine on light. Links, counts and icons use it straight.
+`brand` is the one accent, electric blue: GitHub Primer's dark-mode blue on
+dark and the closest passing cut on light so links keep their contrast. Links, counts and icons use it straight.
 Solid fills (primary buttons) invert it and take `primary-foreground` text,
 which is dark-on-light in dark mode and light-on-dark in light mode. Never
 put white text on a bright fill by hand; the pair is the whole point.
@@ -437,51 +458,43 @@ Type scale: `text-micro` 10px, `text-tiny` 11px, `text-small` 12px,
 `text-body` 13px, `text-lead` 15px, `text-title` 18px. Geist is the only
 family: the `label` and `numeric` treatments keep their size and rhythm but
 render in Geist with tabular figures, and `font-mono` resolves to Geist too
-so the single face loads once. Eyebrows are sentence case, never all-caps.
+so the single face loads once. Eyebrows are sentence case, never all-caps —
+the one exception is the rail's block headings, 10px mono uppercase, which
+read as panel labels rather than prose.
 
 ### Rules
 
-- One accent hue, burgundy: the primary button fills with it, links, counts,
-  icons and the active nav state take it, and `free` is a burgundy dot plus a
+- One accent hue, electric blue: the primary button fills with it, links, counts,
+  icons and the active nav state take it, and `free` is a blue dot plus a
   word. Row hovers and every surface stay gray — the accent marks state, it
   does not decorate. Destructive red is the only other hue and never moves.
-- One floating fill marks the current section, and it glides. `GlideBox` in
-  `sidebar.tsx` is a single absolutely positioned sibling that sits on the
-  hovered row, or on the current section when nothing is hovered, so the same
-  mark answers "where am I looking" and "where am I". Per-row fills cannot
-  travel between rows, they only cross-fade, and they double up on the active
-  row — so rows carry no fill of their own and sit `relative` above the box.
-  The box is glass, not a swatch: a translucent accent tint, an inset light
-  line along the top edge, a small drop shadow and the accent ring at low
-  alpha, with a heavier lift on the dark page. Measure with rects, not
-  `offsetTop`, and skip the entrance transition on first measure or the box
-  slides in from the top on every load. The pointer resolves to the nearest
-  row by Y, not to the element under the cursor: inside the gaps between rows
-  and the margin between the blocks there is no row under the cursor, and a
-  target-based hover used to spring the box back to the resting section
-  mid-move. Nearest-row holds the row it was on through the gap and flips at
-  the midpoint. Focus keeps the target-based resolution. `npm run check:nav`
-  asserts the box rests, glides mid-flight, lands with navigation and follows
-  keyboard focus.
+- The sidebar marks state with type, never a fill. The current route takes
+  medium weight, brand text, the brand icon and `aria-current="page"`; the
+  current section takes medium weight, brand text and `aria-current="location"`
+  from the scroll-spy. Hover only shifts the text colour — no row, button or
+  link in the rail (or the drawer) paints a background. The old `GlideBox`
+  floating mark was removed for this, permanently: it was a fifth surface
+  competing with the rows for attention. `npm run check:nav` asserts no row
+  draws a fill at rest or on hover, that hover still moves the text colour,
+  that the active row reads in the brand, and that navigation, the hash
+  links, the scroll-spy and keyboard focus all land.
 - The sidebar is seven flat rows — Build, Components, Frontend, Backend,
-  Data, Ship, AI — then a Sections block for the route the reader is on,
-  each block under a 10px mono sentence-case heading, `Navigation` and
+  Data, Ship, AI — then a Sections block with the route's non-empty sections,
+  each block under a 10px mono uppercase heading, `Navigation` and
   `Sections`. Rows are 24px at 12px with 14px icons; counts and headings are
   the 10px mono annotation treatment, never a second clickable size. Section
-  rows indent to the nav label column (30px) with no markers and no guide
+  rows sit flush with the nav rows, no indent, no markers and no guide
   lines. Padding is deliberately tight — the scroll area is 8px on all sides,
-  4px between blocks, 8px above the Sections heading. Counts arrive deduped
-  from `findNavCounts` (5.3), never summed. The glide box tracks links only.
-- The rail and the mobile drawer are glass on the page colour, not painted
-  strips: `bg-page/85` with a backdrop blur and one shared `.glass-edge` class
-  in `globals.css` — top sheen, three inset rims, a soft inner wash, a fading
-  hairline on the inner edge and a right-biased contact shadow. They must
-  match the page background; a separate rail grey made the panel read as
-  paint. The sheen pseudo sits at z-index -1, which only paints above the
-  panel background while the host keeps its stacking context (`z-20` on the
-  rail, `z-50` on the sheet) — drop that z-index and it vanishes behind the
-  background with no error. The class is plain unlayered CSS so it wins over
-  the sheet's own drop shadow.
+  8px between blocks, and each block heading carries 8px of its own top
+  padding, so both headings sit 16px below whatever precedes them. Counts
+  arrive deduped from `findNavCounts` (5.3), never summed.
+- The rail and the mobile drawer are the page colour itself — `bg-page`, no
+  tint, no blur, no sheen across the surface. The rail's right separator is
+  just `border-r border-line`, the same 1px hairline every other border uses:
+  no stacked rims, no fading gradient, no contact shadow on that edge. One
+  shared `.glass-edge` class in `globals.css` keeps only the two faint rims
+  (top, outer) so the two panels cannot drift apart, and plain unlayered CSS
+  so it wins over the sheet's own drop shadow.
 - No tree markers anywhere. The `├──`/`└──` section nav and the `[bracketed]`
   names were removed deliberately: sections are plain links with counts, and
   tags are badges.
@@ -490,7 +503,18 @@ so the single face loads once. Eyebrows are sentence case, never all-caps.
   not a table.
 - Every page header uses the same `PageHeader` primitive: mono eyebrow, then
   the count in the accent, then the title, then the description.
-- Every list uses `IndexGroup` and `IndexList`.
+- Headings come in two voices, never three. Titled blocks — page titles at
+  `text-title`, section titles at `text-small` medium — read sentence case in
+  ink. Field labels (`Details`, tag group names, form heads) use the `label`
+  utility: 10px caps mono. A label meets its content `mt-2` below, a titled
+  section heading `mb-3` — the gap scales with the size, like the rims — and
+  blocks separate with symmetric section padding, so top and bottom breathing
+  always match.
+- Every list uses `IndexGroup` and `IndexList`. The list renders two ways from
+  a toolbar toggle that remembers itself in a cookie and localStorage: rows
+  (one line per tool, the default) and quiet bordered cards with the tool's
+  screenshot and favicon. Cards carry no shadow, lift or scale — the name
+  takes the brand on hover, like a row.
 - Decorative `01` section numbering was removed, it read as a markdown heading.
   Real counts stay, they are information.
 - App code reaches for `cn` from `@/lib/utils`, which is `clsx` plus a
@@ -512,13 +536,22 @@ so the single face loads once. Eyebrows are sentence case, never all-caps.
   section on scroll was tried and left whole sections stuck invisible, and the
   guidelines reject gating reading behind animation. Both stay off
   under `prefers-reduced-motion`.
-- Buttons press with `active:scale`, never with a colour swap alone.
+- Buttons press with `active:scale`, never with a colour swap alone. Bordered
+  surfaces, buttons and text inputs wear the shared `rim` utility: border,
+  2px gap, outer hairline, drawn as an outline so the gap stays transparent on
+  any background. Rules, badges, chips and checkbox/radio dots are exempt —
+  rims belong on   surfaces and controls, focus keeps the brand ring. Icon-only buttons wear
+  `rim-tight`: same hairline at a 1px standoff, because a 28px box has no
+  room for the full gap. Cards, the screenshot figure and the palette panel
+  wear `rim-roomy` at 3px: the standoff scales with the size — 1px icons,
+  2px controls, 3px surfaces.
 
 ### Responsive
 
 - Frame is a single `max-w-5xl` with the rail beside the content; `main` caps
   itself once more at `max-w-3xl` so line length stays readable. Do not add a
-  third cap.
+  third cap. The content column carries the same `border-r border-line` on its
+  outer edge, mirroring the rail's separator so the two read as one pair.
 - The sidebar is 14rem, collapses to 3.5rem on a toggle, and remembers that in
   localStorage. Below `lg` it is a drawer instead. Do not derive collapse from a
   media query, that resets the preference on every reload.
@@ -660,6 +693,10 @@ reintroduce without a new argument:
 - Solid section rules and bracketed labels. Both were the old index language;
   the redesign replaced them with dashed hairlines and badges, see section 6.
   Do not reintroduce either without a new argument.
+- A gliding active-state box in the rail (`GlideBox`). State is type weight,
+  the brand icon and ARIA attributes; a floating mark is a second surface
+  competing with the rows. Removed, see section 6. Do not reintroduce without
+  a new argument.
 - Third party favicon services, see section 10
 - Login gated browsing, see section 11
 - A separate homepage layout from `/explore`: `/` is the directory, and

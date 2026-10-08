@@ -26,7 +26,7 @@ export const SignOutButton = ({ collapsed = false }: { collapsed?: boolean }) =>
         router.refresh()
       }}
       className={cn(
-        "h-6 w-full justify-start gap-1.5 px-2 text-small font-normal text-ink-3 hover:text-ink",
+        "h-6 w-full justify-start gap-1.5 px-2 text-small font-normal text-ink-3 rim hover:text-ink",
         collapsed && "justify-center px-0",
       )}
     >

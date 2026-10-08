@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import type { IconComponent } from "reicon-react"
 import {
   AlertCircle,
+  AlignLeft,
   ArrowUpRightSquare,
   Bullhorn,
   Check,
@@ -13,6 +14,7 @@ import {
   Database,
   Frame,
   Gift,
+  Grid,
   Inbox,
   InfoCircle,
   Logout,
@@ -31,11 +33,8 @@ import {
   X,
 } from "reicon-react"
 import * as Icons from "@/components/icons"
-import { DUOTONE } from "@/components/icons/duotone-data"
 
 type AnyComponent = ComponentType<Record<string, unknown>>
-
-const kebab = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase()
 
 const glyphs: [unknown, IconComponent][] = [
   [Icons.PromptIcon, TerminalSquare],
@@ -54,6 +53,8 @@ const glyphs: [unknown, IconComponent][] = [
   [Icons.MegaphoneIcon, Bullhorn],
   [Icons.TelescopeIcon, Telescope],
   [Icons.GiftIcon, Gift],
+  [Icons.ListIcon, AlignLeft],
+  [Icons.GridIcon, Grid],
   [Icons.ShapesIcon, Shapes],
   [Icons.PaletteIcon, Palette],
   [Icons.ComponentIcon, Component],
@@ -81,27 +82,17 @@ describe("icon set", () => {
     }
   })
 
-  it("renders duotone where the set has it, Filled everywhere else", () => {
-    let duotoneCount = 0
+  it("renders every icon Filled at the house size", () => {
     for (const [Icon, Glyph] of glyphs) {
-      const key = Glyph.displayName ? kebab(Glyph.displayName) : ""
-      const duotone = DUOTONE[key]
       const wrapped = render(Icon)
-      if (duotone) {
-        duotoneCount += 1
-        expect(wrapped, `wrapper skipped duotone for ${key}`).toContain(duotone)
-        expect(wrapped, "duotone svg missing its size classes").toContain("reicon size-4 shrink-0")
-      } else {
-        const filled = render(Glyph, {
-          "aria-hidden": true,
-          focusable: false,
-          weight: "Filled",
-          className: "size-4 shrink-0",
-        })
-        expect(wrapped, "wrapper output is not Filled").toBe(filled)
-      }
+      const filled = render(Glyph, {
+        "aria-hidden": true,
+        focusable: false,
+        weight: "Filled",
+        className: "size-3.5 shrink-0",
+      })
+      expect(wrapped, "wrapper output is not Filled").toBe(filled)
     }
-    expect(duotoneCount, "no glyph found the duotone set").toBeGreaterThan(0)
   })
 
   it("every glyph ships Filled data distinct from Outline", () => {

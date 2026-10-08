@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { PageHeader } from "@/components/layout/page-header"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CheckIcon } from "@/components/icons"
 import { SITE } from "@/config/site"
@@ -80,29 +79,28 @@ export default function SponsorsPage() {
         description="erstuff is free to browse and needs no account. This page says exactly how it pays for itself."
       />
 
-      <section className="rule py-6">
+      <section className="rule py-5">
         <h2 className="label text-ink-4">How Money Is Made</h2>
-        <div className="mt-3 grid gap-3">
+        <ul className="mt-1 border-t border-dashed border-line">
           {WAYS_TO_SUPPORT.map((item) => (
-            <Card key={item.title}>
-              <CardHeader>
-                <CardTitle className="text-body">{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-body leading-relaxed">{item.body}</CardDescription>
-              </CardContent>
-            </Card>
+            <li
+              key={item.title}
+              className="border-b border-dashed border-line py-3 last:border-b-0"
+            >
+              <p className="text-body font-semibold text-ink">{item.title}</p>
+              <p className="mt-1 text-small leading-relaxed text-pretty text-ink-2">{item.body}</p>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
-      <section className="rule py-6">
+      <section className="rule py-5">
         <h2 className="label text-ink-4">What Money Does Not Buy</h2>
-        <p className="mt-2.5 text-body leading-relaxed text-ink-2">
+        <p className="mt-2 text-body leading-relaxed text-ink-2">
           This is the part that matters. If any of the following is not true, the site is not worth
           reading and you should tell us.
         </p>
-        <ul className="mt-3 space-y-2.5">
+        <ul className="mt-2 space-y-2">
           {NOT_FOR_SALE.map((item) => (
             <li key={item.title} className="flex gap-2.5">
               <span aria-hidden className="mt-0.5 grid size-5 shrink-0 place-items-center">
@@ -117,9 +115,9 @@ export default function SponsorsPage() {
         </ul>
       </section>
 
-      <section className="rule py-6">
+      <section className="rule py-5">
         <h2 className="label text-ink-4">How the Data Is Made</h2>
-        <p className="mt-2.5 text-body leading-relaxed text-pretty text-ink-2">
+        <p className="mt-2 text-body leading-relaxed text-pretty text-ink-2">
           Listings are assembled with automated tooling and then reviewed by a person. That is
           faster than typing every field by hand and it is also imperfect. Every tool carries a
           verification state and a last checked date, and an unknown field is shown as not verified
@@ -128,33 +126,29 @@ export default function SponsorsPage() {
         </p>
       </section>
 
-      <section className="rule py-6">
+      <section className="rule py-5">
         <h2 className="label text-ink-4">Sponsorship</h2>
-        <p className="mt-2.5 text-body leading-relaxed text-pretty text-ink-2">
+        <p className="mt-2 text-body leading-relaxed text-pretty text-ink-2">
           One placement exists, the sponsored slot on the Explore page. It is sold as a fixed term
           rather than a ranking, and it is labelled for the whole term. There is no unlabelled
           option, no automatic renewal, and no tier that buys better placement in a list.
         </p>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <ul className="mt-2 border-t border-dashed border-line">
           {SPONSORSHIP_TIERS.map((tier) => (
-            <Card key={tier.id} className="border-brand/25 bg-brand-tint/40">
-              <CardHeader>
-                <div className="flex items-baseline justify-between gap-3">
-                  <CardTitle className="text-body">{tier.label}</CardTitle>
-                  <span className="numeric text-lead font-semibold text-brand">${tier.price}</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  {tier.weeks} week{tier.weeks > 1 ? "s" : ""}, one labelled slot, impressions and
-                  clicks reported.
-                </CardDescription>
-              </CardContent>
-            </Card>
+            <li key={tier.id} className="border-b border-dashed border-line py-3 last:border-b-0">
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="text-body font-semibold text-ink">{tier.label}</p>
+                <span className="numeric text-lead font-semibold text-brand">${tier.price}</span>
+              </div>
+              <p className="mt-1 text-small leading-relaxed text-ink-2">
+                {tier.weeks} week{tier.weeks > 1 ? "s" : ""}, one labelled slot, impressions and
+                clicks reported.
+              </p>
+            </li>
           ))}
-        </div>
-        <p className="mt-4 text-body leading-relaxed text-pretty text-ink-2">
+        </ul>
+        <p className="mt-3 text-body leading-relaxed text-pretty text-ink-2">
           To enquire, write to <ContactAddress address={`sponsors@${SITE.domain}`} />. If a
           placement is ever shown without a Sponsored label, email the same address and it will be
           taken down.

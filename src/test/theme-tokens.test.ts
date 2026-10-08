@@ -162,7 +162,7 @@ describe("theme tokens", () => {
  * link: the utility still exists, the test still passes, only the contrast
  * moved. These pairs are the promise the palette makes in both themes.
  */
-describe("burgundy accent contrast", () => {
+describe("sky accent contrast", () => {
   const css = readFileSync(CSS, "utf8")
 
   /** `:root` holds light, `.dark` follows it, so matches come back in order. */

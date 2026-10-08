@@ -35,7 +35,7 @@ const run = async () => {
         (el) => getComputedStyle(el).backgroundColor,
       ),
     )
-    const primary = theme === "dark" ? "rgb(222, 127, 156)" : "rgb(140, 29, 64)"
+    const primary = theme === "dark" ? "rgb(47, 129, 247)" : "rgb(32, 105, 227)"
     check(`${theme} signup CTA is the accent`, cta.includes(primary), cta.join(" | "))
 
     const h1 = await page.locator("main h1").first().innerText()
